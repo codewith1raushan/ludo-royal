@@ -1,0 +1,3615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ludo Royal - Official Royal Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./peerjs.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lk-blue-bg: #0d2b70;
+            --lk-blue-dark: #071742;
+            --lk-gold-1: #fff37a;
+            --lk-gold-2: #f59e0b;
+            --lk-gold-3: #b45309;
+            --lk-gold-border: #ffd700;
+            --red: #ef4444;
+            --green: #22c55e;
+            --yellow: #eab308;
+            --blue: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Lilita One', 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: #030a1c;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            color: #ffffff;
+        }
+
+        /* Diagonal Ludo watermark pattern */
+        .ludo-watermark-bg {
+            background-color: #0d3882;
+            background-image: 
+                radial-gradient(circle at 50% 30%, #1e5cb8 0%, #0c2b6b 65%, #06173d 100%),
+                repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 24px, transparent 24px, transparent 48px),
+                repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.08) 0px, rgba(0, 0, 0, 0.08) 24px, transparent 24px, transparent 48px);
+            background-blend-mode: normal, overlay, multiply;
+        }
+
+        /* Subtle background game board dice watermark */
+        .board-motif-grid {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.12;
+            background-image: radial-gradient(#ffffff 2px, transparent 2px), radial-gradient(#ffffff 2px, transparent 2px);
+            background-size: 36px 36px;
+            background-position: 0 0, 18px 18px;
+        }
+
+        /* Main Mobile Container Frame */
+        .app-viewport {
+            width: 100%;
+            max-width: 440px;
+            height: 100vh;
+            max-height: 920px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 0 5px #facc15;
+            border-radius: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .app-viewport {
+                max-width: 100%;
+                height: 100dvh;
+                max-height: 100dvh;
+                border-radius: 0;
+                box-shadow: none;
+                border: 4px solid #facc15;
+            }
+        }
+
+        /* Gold metallic text effect */
+        .gold-text {
+            color: #fff482;
+            background: linear-gradient(180deg, #ffffff 0%, #ffe066 35%, #f59e0b 80%, #b45309 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.9));
+        }
+
+        .gold-stroke-text {
+            color: #ffe853;
+            text-shadow: 
+                -1.5px -1.5px 0 #6d3900,
+                 1.5px -1.5px 0 #6d3900,
+                -1.5px  1.5px 0 #6d3900,
+                 1.5px  1.5px 0 #6d3900,
+                 0 3px 6px rgba(0,0,0,0.8);
+        }
+
+        .blue-stroke-text {
+            color: #ffffff;
+            text-shadow: 
+                -1.5px -1.5px 0 #0d2b70,
+                 1.5px -1.5px 0 #0d2b70,
+                -1.5px  1.5px 0 #0d2b70,
+                 1.5px  1.5px 0 #0d2b70,
+                 0 3px 5px rgba(0,0,0,0.8);
+        }
+
+        /* Main Game Mode Action Cards */
+        .mode-card {
+            position: relative;
+            background: linear-gradient(180deg, #1c52b8 0%, #0d2d79 50%, #081d52 100%);
+            border: 3.5px solid #ffcc00;
+            border-radius: 22px;
+            box-shadow: 
+                0 6px 12px rgba(0,0,0,0.6),
+                inset 0 2px 4px rgba(255,255,255,0.4),
+                inset 0 -3px 6px rgba(0,0,0,0.5),
+                0 0 10px rgba(245, 158, 11, 0.4);
+            cursor: pointer;
+            transition: transform 0.12s ease, filter 0.12s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 6px 6px 6px;
+            overflow: hidden;
+        }
+
+        .mode-card:hover {
+            filter: brightness(1.08);
+            transform: translateY(-2px);
+        }
+
+        .mode-card:active {
+            transform: scale(0.96) translateY(2px);
+            filter: brightness(0.92);
+        }
+
+        /* Golden Yellow Button Banner */
+        .card-title-pill {
+            width: 100%;
+            background: linear-gradient(180deg, #fff77d 0%, #ffc800 45%, #e69500 100%);
+            border-radius: 12px;
+            border: 1.5px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.9);
+            color: #0c2368;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            text-align: center;
+            padding: 4px 2px;
+            line-height: 1.15;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        /* Top Resource Bars */
+        .resource-pill {
+            background: linear-gradient(180deg, #0f358a 0%, #081d52 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            padding: 2px 3px 2px 6px;
+            gap: 4px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.6), 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        .plus-btn {
+            background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+            border: 1.5px solid #a7f3d0;
+            border-radius: 7px;
+            width: 19px;
+            height: 19px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            cursor: pointer;
+        }
+
+        /* Bottom Floating Bar / Dock */
+        .bottom-dock {
+            background: linear-gradient(180deg, #1d4fd0 0%, #0b2670 50%, #061647 100%);
+            border-top: 3px solid #ffcc00;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 6px 20px 8px 20px;
+            position: relative;
+            z-index: 30;
+        }
+
+        .dock-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+            position: relative;
+            min-width: 75px;
+        }
+
+        .dock-item:active {
+            transform: scale(0.92);
+        }
+
+        .dock-item.active .dock-icon-wrap {
+            transform: translateY(-8px) scale(1.15);
+            background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+            border: 2.5px solid #ffe066;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.6), 0 0 12px #3b82f6;
+        }
+
+        .dock-icon-wrap {
+            width: 42px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+            border: 1.5px solid rgba(255,255,255,0.25);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .dock-label {
+            font-size: 9.5px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #dbeafe;
+        }
+
+        /* Floating Sidebar Badges */
+        .side-badge {
+            cursor: pointer;
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .side-badge:hover {
+            transform: scale(1.08);
+        }
+
+        .side-badge:active {
+            transform: scale(0.92);
+        }
+
+        /* 3D Dice Component for gameplay */
+        .dice-box {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(145deg, #ffffff, #e2e8f0);
+            border-radius: 12px;
+            border: 2.5px solid #cbd5e1;
+            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.5), inset 0 -3px 0 #cbd5e1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 6px;
+            gap: 2.5px;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .dice-box.rolling {
+            animation: diceShake 0.35s infinite linear;
+        }
+
+        .dice-pip {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: transparent;
+        }
+
+        .dice-pip.visible {
+            background: #0f172a;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .dice-pip.visible.pip-six, .dice-pip.visible.pip-one {
+            background: #dc2626;
+        }
+
+        @keyframes diceShake {
+            0% { transform: rotate(0deg) scale(1.06); }
+            25% { transform: rotate(-16deg) translate(-2px, 2px) scale(1.1); }
+            50% { transform: rotate(14deg) translate(2px, -2px) scale(1.06); }
+            75% { transform: rotate(-10deg) translate(-2px, -1px) scale(1.1); }
+            100% { transform: rotate(0deg) scale(1.06); }
+        }
+
+        /* Ludo 15x15 Grid */
+        .ludo-board-wrapper {
+            width: 100%;
+            max-width: min(88vw, 440px);
+            aspect-ratio: 1 / 1;
+            padding: 8px;
+            background: linear-gradient(145deg, #1e3a8a, #0f172a);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 0 4px #facc15;
+            position: relative;
+        }
+
+        .ludo-board {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            grid-template-rows: repeat(15, 1fr);
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border: 2.5px solid #0f172a;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .cell {
+            border: 0.5px solid #cbd5e1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+        }
+
+        .base-box {
+            padding: 12%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 1.5px solid #0f172a;
+        }
+
+        .base-red { grid-area: 1 / 1 / 7 / 7; background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .base-green { grid-area: 1 / 10 / 7 / 16; background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .base-yellow { grid-area: 10 / 10 / 16 / 16; background: linear-gradient(135deg, #eab308, #ca8a04); }
+        .base-blue { grid-area: 10 / 1 / 16 / 7; background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+        .base-inner {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 16%;
+            border: 2px solid #0f172a;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.12);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            padding: 14%;
+            gap: 16%;
+        }
+
+        .yard-spot {
+            border-radius: 50%;
+            border: 2px solid rgba(15, 23, 42, 0.25);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .base-red .yard-spot { background: #fee2e2; border-color: #ef4444; }
+        .base-green .yard-spot { background: #dcfce7; border-color: #22c55e; }
+        .base-yellow .yard-spot { background: #fef9c3; border-color: #eab308; }
+        .base-blue .yard-spot { background: #dbeafe; border-color: #3b82f6; }
+
+        .center-home {
+            grid-area: 7 / 7 / 10 / 10;
+            position: relative;
+            border: 1.5px solid #0f172a;
+            overflow: hidden;
+        }
+
+        .path-red { background-color: var(--red) !important; }
+        .path-green { background-color: var(--green) !important; }
+        .path-yellow { background-color: var(--yellow) !important; }
+        .path-blue { background-color: var(--blue) !important; }
+
+        /* Pawn Token */
+        .token {
+            position: absolute;
+            width: 5.6%;
+            height: 5.6%;
+            border-radius: 50%;
+            z-index: 25;
+            transition: left 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        top 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+            cursor: default;
+        }
+
+        .token::after {
+            content: '';
+            width: 50%;
+            height: 50%;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .token-red { background: radial-gradient(circle at 30% 30%, #f87171, #b91c1c); }
+        .token-green { background: radial-gradient(circle at 30% 30%, #4ade80, #15803d); }
+        .token-yellow { background: radial-gradient(circle at 30% 30%, #facc15, #a16207); }
+        .token-blue { background: radial-gradient(circle at 30% 30%, #60a5fa, #1d4ed8); }
+
+        .token.eligible {
+            cursor: pointer;
+            z-index: 40 !important;
+            animation: tokenPulse 0.9s infinite ease-in-out;
+        }
+
+        .token.eligible::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 2.5px dashed #ffffff;
+            animation: spinRing 4s linear infinite;
+            box-shadow: 0 0 14px rgba(255, 255, 255, 0.9);
+        }
+
+        @keyframes tokenPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1.1); }
+            50% { transform: translate(-50%, -50%) scale(1.32) translateY(-3px); }
+        }
+
+        @keyframes spinRing {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Mobile Application Viewport -->
+    <div id="mainApp" class="app-viewport ludo-watermark-bg select-none">
+        <div class="board-motif-grid"></div>
+
+        <!-- ========================================================================= -->
+        <!-- SCREEN 1: LUDO KING HOME MENU -->
+        <!-- ========================================================================= -->
+        <div id="homeScreen" class="w-full h-full flex flex-col justify-between relative z-10 overflow-hidden">
+            
+            <!-- TOP BAR (Profile Avatar, Level, Settings, Mail, Gems, Coins) -->
+            <div class="px-3 pt-2.5 pb-1 flex items-center justify-between w-full relative z-20">
+                <!-- User Profile & Settings Left Side -->
+                <div class="flex items-center gap-1.5">
+                    <!-- Avatar Square Box with Level Bar (Tap opens profile) -->
+                    <div class="relative cursor-pointer" onclick="openProfileModal()" title="Player Profile">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-b from-blue-400 to-blue-800 p-[2px] shadow-lg border-2 border-amber-300 overflow-hidden relative">
+                            <img id="homeScreenAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" alt="Avatar" class="w-full h-full object-cover rounded-[10px]" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=LudoQueen'"/>
+                            <!-- Online Active Dot -->
+                            <div class="absolute top-1 right-1 w-2.5 h-2.5 bg-emerald-400 border border-white rounded-full shadow-sm"></div>
+                        </div>
+                        <!-- Level 1 Pill below avatar -->
+                        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center bg-blue-900 border border-amber-300 rounded-full px-2 py-0.2 shadow-md">
+                            <span class="text-amber-300 text-[10px] mr-0.5">★</span>
+                            <span class="text-white text-[10px] font-black leading-tight">1</span>
+                        </div>
+                    </div>
+
+                    <!-- Settings Gear Icon -->
+                    <button onclick="openSettingsModal()" class="w-8 h-8 rounded-lg bg-blue-700/80 border border-blue-400 flex items-center justify-center text-white shadow-md hover:bg-blue-600 active:scale-95 transition ml-1" title="Settings">
+                        <svg class="w-5 h-5 text-slate-100" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Mail Envelope Icon with Red '1' Badge -->
+                    <button onclick="openMailModal()" class="w-8 h-8 rounded-lg bg-amber-500 border border-amber-300 flex items-center justify-center text-white shadow-md hover:bg-amber-400 active:scale-95 transition relative" title="Mailbox">
+                        <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-600 border border-white text-white text-[9px] font-black rounded-full flex items-center justify-center shadow">1</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MAIN BODY / FLOATING SIDEBARS & CENTER BRAND LOGO -->
+            <div class="flex-1 flex flex-col px-2.5 py-1 relative">
+                
+                <!-- CENTERPIECE: LUDO KING 3D LOGO & ISOMETRIC BOARD ILLUSTRATION -->
+                <div class="flex flex-col items-center justify-center pt-1 pb-1 relative z-10">
+                    <!-- "KING" stylized arched text above crown -->
+                    <div class="text-[12px] font-black tracking-widest text-amber-300 -mb-1 filter drop-shadow">
+                        👑 Royal
+                    </div>
+
+                    <!-- Royal Golden Crown & 3D "LUDO" Letter Tiles -->
+                    <div class="relative flex items-center justify-center gap-1.5 my-0.5">
+                        <!-- Crown graphic overlapping L and U -->
+                        <div class="absolute -top-4 left-6 z-20 pointer-events-none filter drop-shadow">
+                            <svg class="w-8 h-8 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
+                            </svg>
+                        </div>
+
+                        <!-- 3D Letter "L" (Blue) -->
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-b from-sky-400 via-blue-600 to-blue-800 border-2 border-white shadow-lg flex items-center justify-center">
+                            <span class="text-xl font-black text-white drop-shadow">L</span>
+                        </div>
+                        <!-- 3D Letter "U" (Red) -->
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-b from-rose-400 via-red-600 to-red-800 border-2 border-white shadow-lg flex items-center justify-center">
+                            <span class="text-xl font-black text-white drop-shadow">U</span>
+                        </div>
+                        <!-- 3D Letter "D" (Green) -->
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-b from-emerald-400 via-green-600 to-green-800 border-2 border-white shadow-lg flex items-center justify-center">
+                            <span class="text-xl font-black text-white drop-shadow">D</span>
+                        </div>
+                        <!-- 3D Letter "O" (Yellow) -->
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-b from-yellow-300 via-amber-500 to-amber-700 border-2 border-white shadow-lg flex items-center justify-center">
+                            <span class="text-xl font-black text-white drop-shadow">O</span>
+                        </div>
+                    </div>
+
+                    <!-- 3D Isometric Ludo Board Graphic with Dice & 4 Pawns -->
+                    <div class="relative w-56 h-20 flex items-center justify-center">
+                        <!-- Perspective Ludo Board SVG Graphic -->
+                        <svg class="w-48 h-18 filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)]" viewBox="0 0 200 80">
+                            <!-- 3D Angled Ludo Board Base -->
+                            <polygon points="100,6 185,42 100,74 15,42" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+                            <!-- Quadrants: Red, Green, Yellow, Blue -->
+                            <polygon points="100,6 185,42 142,58 100,40" fill="#22c55e" opacity="0.9"/>
+                            <polygon points="100,74 185,42 142,58 100,58" fill="#eab308" opacity="0.9"/>
+                            <polygon points="100,74 15,42 58,58 100,58" fill="#3b82f6" opacity="0.9"/>
+                            <polygon points="100,6 15,42 58,58 100,40" fill="#ef4444" opacity="0.9"/>
+                            <!-- White Dice in the Center -->
+                            <polygon points="100,24 116,33 100,42 84,33" fill="#ffffff" stroke="#334155" stroke-width="1.5"/>
+                            <polygon points="84,33 100,42 100,54 84,45" fill="#e2e8f0" stroke="#334155" stroke-width="1.5"/>
+                            <polygon points="116,33 100,42 100,54 116,45" fill="#cbd5e1" stroke="#334155" stroke-width="1.5"/>
+                            <!-- Dice Pips -->
+                            <circle cx="100" cy="33" r="2" fill="#ef4444"/>
+                            <circle cx="92" cy="39" r="1.5" fill="#0f172a"/>
+                            <circle cx="92" cy="48" r="1.5" fill="#0f172a"/>
+                            <circle cx="108" cy="39" r="1.5" fill="#0f172a"/>
+                            <circle cx="108" cy="48" r="1.5" fill="#0f172a"/>
+                        </svg>
+
+                        <!-- 3D Standing Pawns around Board -->
+                        <!-- Blue Pawn (Left) -->
+                        <div class="absolute left-6 bottom-3 flex flex-col items-center filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]">
+                            <div class="w-4 h-4 rounded-full bg-gradient-to-tr from-sky-400 to-blue-700 border border-white"></div>
+                            <div class="w-6 h-7 rounded-t-full bg-gradient-to-b from-sky-400 to-blue-700 -mt-1 border-b-2 border-white rounded-b-md"></div>
+                        </div>
+
+                        <!-- Red Pawn (Back) -->
+                        <div class="absolute left-20 top-0 flex flex-col items-center filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]">
+                            <div class="w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-rose-400 to-red-700 border border-white"></div>
+                            <div class="w-5 h-6 rounded-t-full bg-gradient-to-b from-rose-400 to-red-700 -mt-1 border-b-2 border-white rounded-b-md"></div>
+                        </div>
+
+                        <!-- Green Pawn (Right) -->
+                        <div class="absolute right-16 top-1 flex flex-col items-center filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]">
+                            <div class="w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-emerald-400 to-green-700 border border-white"></div>
+                            <div class="w-5 h-6 rounded-t-full bg-gradient-to-b from-emerald-400 to-green-700 -mt-1 border-b-2 border-white rounded-b-md"></div>
+                        </div>
+
+                        <!-- Yellow Pawn (Front Right) -->
+                        <div class="absolute right-6 bottom-2 flex flex-col items-center filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]">
+                            <div class="w-4 h-4 rounded-full bg-gradient-to-tr from-yellow-300 to-amber-600 border border-white"></div>
+                            <div class="w-6 h-7 rounded-t-full bg-gradient-to-b from-yellow-300 to-amber-600 -mt-1 border-b-2 border-white rounded-b-md"></div>
+                        </div>
+
+                        <!-- TM trademark -->
+                        <span class="absolute right-2 bottom-6 text-[9px] font-black text-amber-300">TM</span>
+                    </div>
+                </div>
+
+                <!-- 4 MAIN GAME MODE BUTTONS & SNAKE OPTION -->
+                <div class="my-auto w-full max-w-[390px] mx-auto flex flex-col gap-2.5 px-1.5 py-1 relative z-20">
+                    
+                    <!-- 2x2 Grid with Golden Borders -->
+                    <div class="grid grid-cols-2 gap-3">
+                        
+                        <!-- 1. PLAY ONLINE (COMING SOON) -->
+                        <div class="mode-card h-28 relative overflow-hidden group cursor-pointer" onclick="openOnlineMatchmaking()">
+                            <!-- Coming Soon Badge -->
+                            <div class="absolute -top-1 -right-1 bg-gradient-to-r from-amber-500 via-rose-500 to-red-600 text-white font-black text-[8.5px] px-2 py-0.5 rounded-full shadow-lg border border-amber-300 uppercase tracking-wider animate-pulse flex items-center gap-1 z-30">
+                                <span>⏳</span>
+                                <span>COMING SOON</span>
+                            </div>
+
+                            <!-- Card Icon: Two Phones + Globe -->
+                            <div class="flex-1 flex items-center justify-center gap-1.5 opacity-85">
+                                <!-- Left Phone -->
+                                <div class="w-5 h-8 rounded-md bg-gradient-to-b from-amber-300 to-amber-600 border border-white flex flex-col items-center justify-between p-0.5 shadow">
+                                    <div class="w-2 h-0.5 bg-slate-900 rounded-full"></div>
+                                    <div class="w-3.5 h-5 bg-blue-950 rounded-sm"></div>
+                                    <div class="w-1 h-1 bg-white rounded-full"></div>
+                                </div>
+                                <!-- Earth Globe with Radiowaves -->
+                                <div class="relative flex items-center justify-center">
+                                    <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-500 via-sky-400 to-blue-600 border border-white flex items-center justify-center shadow-lg">
+                                        <span class="text-[11px]">🌍</span>
+                                    </div>
+                                    <span class="absolute -top-1 -right-1 text-[8px] text-yellow-300 animate-pulse">✨</span>
+                                </div>
+                                <!-- Right Phone -->
+                                <div class="w-5 h-8 rounded-md bg-gradient-to-b from-amber-300 to-amber-600 border border-white flex flex-col items-center justify-between p-0.5 shadow">
+                                    <div class="w-2 h-0.5 bg-slate-900 rounded-full"></div>
+                                    <div class="w-3.5 h-5 bg-blue-950 rounded-sm"></div>
+                                    <div class="w-1 h-1 bg-white rounded-full"></div>
+                                </div>
+                            </div>
+                            <!-- Golden Title Banner -->
+                            <div class="card-title-pill">
+                                PLAY ONLINE
+                            </div>
+                            <!-- Subtext: Coming Soon -->
+                            <div class="text-[9.5px] text-amber-300 flex items-center gap-1 font-sans font-extrabold py-0.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-ping"></span>
+                                <span>Coming Soon 🚀</span>
+                            </div>
+                        </div>
+
+                        <!-- 2. PLAY WITH FRIENDS (Includes Voice Mic Badge) -->
+                        <div class="mode-card h-28" onclick="openPlayWithFriendsModal()">
+                            <!-- Voice Chat Mic Badge at top-right corner -->
+                            <div class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-sky-500 border border-white flex items-center justify-center shadow">
+                                <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                                </svg>
+                            </div>
+                            <!-- Card Icon: Two Phones + Red Hearts -->
+                            <div class="flex-1 flex items-center justify-center gap-1.5">
+                                <div class="w-5 h-8 rounded-md bg-gradient-to-b from-amber-300 to-amber-600 border border-white flex flex-col items-center justify-between p-0.5 shadow">
+                                    <div class="w-2 h-0.5 bg-slate-900 rounded-full"></div>
+                                    <div class="w-3.5 h-5 bg-blue-950 rounded-sm"></div>
+                                    <div class="w-1 h-1 bg-white rounded-full"></div>
+                                </div>
+                                <!-- Two Floating Red Hearts -->
+                                <div class="flex items-center -space-x-1">
+                                    <span class="text-base filter drop-shadow">❤️</span>
+                                    <span class="text-sm filter drop-shadow -mt-1">❤️</span>
+                                </div>
+                                <div class="w-5 h-8 rounded-md bg-gradient-to-b from-amber-300 to-amber-600 border border-white flex flex-col items-center justify-between p-0.5 shadow">
+                                    <div class="w-2 h-0.5 bg-slate-900 rounded-full"></div>
+                                    <div class="w-3.5 h-5 bg-blue-950 rounded-sm"></div>
+                                    <div class="w-1 h-1 bg-white rounded-full"></div>
+                                </div>
+                            </div>
+                            <!-- Golden Title Banner -->
+                            <div class="card-title-pill">
+                                PLAY WITH FRIENDS
+                            </div>
+                            <!-- Subtext: Active Players Count -->
+                            <div class="text-[9px] text-white flex items-center gap-1 font-sans font-bold py-0.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-ping"></span>
+                                <span>Players: 15,436</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. VS COMPUTER -->
+                        <div class="mode-card h-28" onclick="openComputerSetupModal()">
+                            <!-- Card Icon: Smartphone with VS Shield -->
+                            <div class="flex-1 flex items-center justify-center">
+                                <div class="w-8 h-10 rounded-md bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 border-2 border-white flex flex-col items-center justify-center shadow-lg relative">
+                                    <div class="bg-blue-900 px-1 py-0.5 rounded border border-amber-300 flex items-center justify-center">
+                                        <span class="text-[10px] font-black text-amber-300 tracking-wider">VS</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Golden Title Banner -->
+                            <div class="card-title-pill mb-1">
+                                COMPUTER
+                            </div>
+                        </div>
+
+                        <!-- 4. PASS N PLAY -->
+                        <div class="mode-card h-28" onclick="openPassNPlayModal()">
+                            <!-- Card Icon: Two Kids Silhouette playing board game -->
+                            <div class="flex-1 flex items-center justify-center gap-1 text-amber-300">
+                                <!-- Left Player silhouette -->
+                                <div class="flex flex-col items-center">
+                                    <div class="w-3.5 h-3.5 rounded-full bg-amber-300"></div>
+                                    <div class="w-5 h-4 bg-amber-400 rounded-t-lg -mt-0.5"></div>
+                                </div>
+                                <!-- Board between them -->
+                                <div class="w-5 h-3 bg-amber-200 border border-amber-700 transform rotate-12 -mt-1 shadow"></div>
+                                <!-- Right Player silhouette -->
+                                <div class="flex flex-col items-center">
+                                    <div class="w-3.5 h-3.5 rounded-full bg-amber-300"></div>
+                                    <div class="w-5 h-4 bg-amber-400 rounded-t-lg -mt-0.5"></div>
+                                </div>
+                            </div>
+                            <!-- Golden Title Banner -->
+                            <div class="card-title-pill mb-1">
+                                PASS N PLAY
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- 5. SNAKES & LADDERS (SNAKE) SPECIAL OPTION -->
+                    <div onclick="startExactSnakeGame()" class="w-full h-15 rounded-2xl bg-gradient-to-r from-emerald-950 via-blue-950 to-indigo-950 border-[3px] border-amber-400 shadow-[0_6px_16px_rgba(0,0,0,0.6)] flex items-center justify-between px-3 py-2 cursor-pointer active:scale-95 transition hover:brightness-110 relative overflow-hidden group">
+                        <!-- Shimmer highlight -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
+                        <!-- Left: 3D Snake & Ladder Badge -->
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-11 h-11 rounded-xl bg-gradient-to-b from-yellow-300 via-amber-500 to-amber-700 p-0.5 border border-white shadow-md flex items-center justify-center flex-shrink-0">
+                                <div class="w-full h-full rounded-[9px] bg-gradient-to-br from-blue-900 to-emerald-950 flex items-center justify-center relative overflow-hidden">
+                                    <span class="text-xl filter drop-shadow">🐍</span>
+                                    <span class="text-xs absolute -bottom-0.5 right-0.5 filter drop-shadow">🪜</span>
+                                    <span class="text-[9px] absolute top-0.5 left-0.5 filter drop-shadow">🎲</span>
+                                </div>
+                            </div>
+                            <!-- Title & Subtitle -->
+                            <div class="flex flex-col text-left">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs font-black text-amber-300 tracking-wider gold-stroke-text">SNAKES & LADDERS</span>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500 text-white font-extrabold uppercase animate-pulse">Hot</span>
+                                </div>
+                                <span class="text-[10px] text-blue-200/90 font-sans font-semibold">Classic 1-100 Board • Play Now</span>
+                            </div>
+                        </div>
+
+                        <!-- Right: Golden Play Action Button -->
+                        <div class="px-3.5 py-1.5 rounded-xl bg-gradient-to-b from-amber-300 via-yellow-400 to-amber-600 border border-white text-blue-950 font-black text-xs shadow flex items-center gap-1 flex-shrink-0 active:scale-90 transition">
+                            <span>PLAY</span>
+                            <span class="text-[10px]">▶</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- BOTTOM NAVIGATION DOCK (HOME & FRIENDS) -->
+            <div class="bottom-dock">
+                <!-- Tab: HOME (Active & Protruding) -->
+                <div class="dock-item active" onclick="playClickSound()">
+                    <div class="dock-icon-wrap">
+                        <svg class="w-6 h-6 text-amber-300 drop-shadow" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                    </div>
+                    <span class="dock-label text-amber-300 font-extrabold">HOME</span>
+                </div>
+
+                <!-- Tab: FRIENDS -->
+                <div class="dock-item" onclick="openFriendsModal()">
+                    <div class="dock-icon-wrap">
+                        <span class="text-lg">👥</span>
+                    </div>
+                    <span class="dock-label">FRIENDS</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- SCREEN 2: IN-GAME MATCH BOARD VIEW (PLAYABLE LUDO) -->
+        <!-- ========================================================================= -->
+        <div id="gameScreen" class="w-full h-full hidden flex-col justify-between relative z-10 p-2 sm:p-3 overflow-y-auto">
+            
+            <!-- Game Top Header with Return-to-Home button -->
+            <div class="w-full flex items-center justify-between bg-slate-900/90 border border-slate-700 rounded-2xl px-3 py-2 shadow-lg mb-1">
+                <button onclick="confirmExitGame()" class="flex items-center gap-1.5 bg-blue-700 hover:bg-blue-600 text-white text-xs font-black px-3 py-1.5 rounded-xl border border-blue-400 shadow active:scale-95 transition">
+                    <span>⬅</span>
+                    <span>HOME</span>
+                </button>
+
+                <div class="flex flex-col items-center">
+                    <span class="text-xs font-black text-amber-300 tracking-wider">LUDO KING</span>
+                    <span id="gameStatusText" class="text-[10px] text-slate-300 font-medium">Roll 6 to exit yard</span>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                    <button onclick="toggleSound()" id="gameSoundBtn" class="p-1.5 rounded-xl bg-slate-800 text-slate-200 border border-slate-700 shadow" title="Sound">
+                        🔊
+                    </button>
+                    <button onclick="openRulesModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-200 border border-slate-700 text-xs font-bold" title="Rules">
+                        ?
+                    </button>
+                </div>
+            </div>
+
+            <!-- Top Players Row: RED (Top-Left) & GREEN (Top-Right) -->
+            <div class="w-full grid grid-cols-2 gap-2 my-1">
+                <!-- Red Player Card -->
+                <div id="card-red" class="player-card bg-slate-900/95 border border-red-500/50 rounded-2xl p-2 flex items-center justify-between shadow-md">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <img id="avatar-red" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" alt="Red" class="w-7 h-7 rounded-lg object-cover border border-red-400 flex-shrink-0" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Red'"/>
+                        <div class="flex flex-col justify-between truncate">
+                            <div class="flex items-center gap-1 truncate">
+                                <span class="w-2 h-2 rounded-full bg-red-500 shadow flex-shrink-0"></span>
+                                <span id="name-red" class="font-bold text-xs text-white truncate max-w-[65px]">Player 1</span>
+                            </div>
+                            <span class="text-[10px] text-slate-400">Home: <b id="score-red" class="text-white">0/4</b></span>
+                            <span id="hint-red" class="text-[9px] font-bold text-amber-400 h-3 truncate"></span>
+                        </div>
+                    </div>
+                    <div id="dice-red" onclick="handleHumanDiceClick('red')" class="dice-box flex-shrink-0"></div>
+                </div>
+
+                <!-- Green Player Card -->
+                <div id="card-green" class="player-card bg-slate-900/95 border border-green-500/50 rounded-2xl p-2 flex items-center justify-between shadow-md">
+                    <div id="dice-green" onclick="handleHumanDiceClick('green')" class="dice-box flex-shrink-0"></div>
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <div class="flex flex-col justify-between items-end text-right truncate">
+                            <div class="flex items-center gap-1 truncate">
+                                <span id="name-green" class="font-bold text-xs text-white truncate max-w-[70px]">Computer</span>
+                                <span class="w-2 h-2 rounded-full bg-green-500 shadow flex-shrink-0"></span>
+                            </div>
+                            <span class="text-[10px] text-slate-400">Home: <b id="score-green" class="text-white">0/4</b></span>
+                            <span id="hint-green" class="text-[9px] font-bold text-amber-400 h-3 truncate"></span>
+                        </div>
+                        <img id="avatar-green" src="https://api.dicebear.com/7.x/bottts/svg?seed=Green" alt="Green" class="w-7 h-7 rounded-lg object-cover border border-green-400 flex-shrink-0" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Green'"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center 15x15 Ludo Board -->
+            <div class="w-full flex items-center justify-center my-auto">
+                <div class="ludo-board-wrapper">
+                    <div id="ludoBoard" class="ludo-board">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Players Row: BLUE (Bottom-Left) & YELLOW (Bottom-Right) -->
+            <div class="w-full grid grid-cols-2 gap-2 my-1">
+                <!-- Blue Player Card -->
+                <div id="card-blue" class="player-card bg-slate-900/95 border border-blue-500/50 rounded-2xl p-2 flex items-center justify-between shadow-md">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <img id="avatar-blue" src="https://api.dicebear.com/7.x/bottts/svg?seed=Blue" alt="Blue" class="w-7 h-7 rounded-lg object-cover border border-blue-400 flex-shrink-0" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Blue'"/>
+                        <div class="flex flex-col justify-between truncate">
+                            <div class="flex items-center gap-1 truncate">
+                                <span class="w-2 h-2 rounded-full bg-blue-500 shadow flex-shrink-0"></span>
+                                <span id="name-blue" class="font-bold text-xs text-white truncate max-w-[70px]">Computer</span>
+                            </div>
+                            <span class="text-[10px] text-slate-400">Home: <b id="score-blue" class="text-white">0/4</b></span>
+                            <span id="hint-blue" class="text-[9px] font-bold text-amber-400 h-3 truncate"></span>
+                        </div>
+                    </div>
+                    <div id="dice-blue" onclick="handleHumanDiceClick('blue')" class="dice-box flex-shrink-0"></div>
+                </div>
+
+                <!-- Yellow Player Card -->
+                <div id="card-yellow" class="player-card bg-slate-900/95 border border-yellow-500/50 rounded-2xl p-2 flex items-center justify-between shadow-md">
+                    <div id="dice-yellow" onclick="handleHumanDiceClick('yellow')" class="dice-box flex-shrink-0"></div>
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <div class="flex flex-col justify-between items-end text-right truncate">
+                            <div class="flex items-center gap-1 truncate">
+                                <span id="name-yellow" class="font-bold text-xs text-white truncate max-w-[70px]">Computer</span>
+                                <span class="w-2 h-2 rounded-full bg-yellow-500 shadow flex-shrink-0"></span>
+                            </div>
+                            <span class="text-[10px] text-slate-400">Home: <b id="score-yellow" class="text-white">0/4</b></span>
+                            <span id="hint-yellow" class="text-[9px] font-bold text-amber-400 h-3 truncate"></span>
+                        </div>
+                        <img id="avatar-yellow" src="https://api.dicebear.com/7.x/bottts/svg?seed=Yellow" alt="Yellow" class="w-7 h-7 rounded-lg object-cover border border-yellow-400 flex-shrink-0" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Yellow'"/>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- SCREEN 3: EXACT SNAKES & LADDERS GAME VIEW (MATCHING USER SCREENSHOT) -->
+        <!-- ========================================================================= -->
+        <div id="snakeScreen" class="w-full h-full hidden flex-col justify-between relative z-10 p-2 sm:p-2.5 overflow-hidden select-none bg-gradient-to-b from-[#8b0000] via-[#660000] to-[#400000]">
+            
+            <!-- TOP CRIMSON ARCHED HEADER -->
+            <div class="relative w-full max-w-[370px] mx-auto pt-1 pb-1 flex-shrink-0">
+                <!-- Arched banner frame with yellow border -->
+                <div class="relative w-full h-14 bg-gradient-to-b from-[#dc2626] via-[#b91c1c] to-[#991b1b] border-[3px] border-[#fde047] rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.6)] flex items-center justify-center overflow-hidden">
+                    <!-- Subtle numbers background texture -->
+                    <div class="absolute inset-0 opacity-15 pointer-events-none text-[8px] font-mono leading-none tracking-widest text-yellow-100 flex flex-wrap select-none p-1">
+                        43 86 91 54 28 73 99 12 65 37 40 82 19 63 95 14 51 67 21 84 93 75 10 34
+                    </div>
+                    
+                    <!-- Back to Home Button (Left) -->
+                    <button onclick="returnFromSnakeGame()" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-red-900 border-2 border-yellow-300 text-yellow-300 font-black text-sm flex items-center justify-center shadow-lg active:scale-95 transition hover:brightness-125 z-20" title="Back to Home">
+                        ⬅
+                    </button>
+
+                    <!-- Big 3D Cartoon Title: "Snakes & Ladders" -->
+                    <h1 class="text-2xl sm:text-3xl font-black italic text-[#ffe600] tracking-wide relative z-10" style="font-family: Impact, 'Arial Black', sans-serif; text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 4px 0 #000, 0 5px 8px rgba(0,0,0,0.8);">
+                        Snakes & Ladders
+                    </h1>
+
+                    <!-- Sound Toggle Button (Right) -->
+                    <button onclick="toggleSound()" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-red-900 border-2 border-yellow-300 text-yellow-300 text-xs flex items-center justify-center shadow-lg active:scale-95 transition z-20" title="Sound">
+                        🔊
+                    </button>
+                </div>
+            </div>
+
+            <!-- 10x10 SNAKES & LADDERS BOARD CONTAINER -->
+            <div class="relative w-full max-w-[370px] mx-auto my-auto aspect-[1/1.22] rounded-xl border-[4px] border-[#fde047] shadow-[0_6px_20px_rgba(0,0,0,0.7)] bg-white overflow-hidden select-none">
+                
+                <!-- 10x10 Board Grid (100 cells) -->
+                <div id="exactSnakeGrid" class="w-full h-full grid grid-cols-10 grid-rows-10 relative z-0">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <!-- SVG LADDERS & SNAKES OVERLAY -->
+                <div id="exactSnakeSvgWrapper" class="absolute inset-0 w-full h-full pointer-events-none z-10">
+                    <!-- Populated dynamically via JS buildExactSnakeSvg() -->
+                </div>
+
+                <!-- ACTIVE PLAYER TOKENS ON BOARD -->
+                <div id="exactSnakeTokensLayer" class="absolute inset-0 w-full h-full pointer-events-none z-20">
+                    <!-- "You" Blue Pin Token -->
+                    <div id="tokenYou" class="absolute transform -translate-x-1/2 -translate-y-[85%] transition-all duration-300 pointer-events-none flex flex-col items-center">
+                        <svg class="w-6 h-8 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.7)]" viewBox="0 0 24 32">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20s12-11 12-20c0-6.63-5.37-12-12-12zm0 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" fill="#00d2ff" stroke="#ffffff" stroke-width="1.5"/>
+                            <circle cx="12" cy="12" r="4" fill="#ffffff"/>
+                        </svg>
+                        <span class="text-[8px] font-black bg-blue-900 border border-white text-white px-1 rounded-full -mt-1 shadow">YOU</span>
+                    </div>
+
+                    <!-- "Com" Red Pin Token -->
+                    <div id="tokenCom" class="absolute transform -translate-x-1/2 -translate-y-[85%] transition-all duration-300 pointer-events-none flex flex-col items-center">
+                        <svg class="w-6 h-8 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.7)]" viewBox="0 0 24 32">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20s12-11 12-20c0-6.63-5.37-12-12-12zm0 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+                            <circle cx="12" cy="12" r="4" fill="#ffffff"/>
+                        </svg>
+                        <span class="text-[8px] font-black bg-red-900 border border-white text-white px-1 rounded-full -mt-1 shadow">COM</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BOTTOM CONTROLS BAR (YOU | 3D DICE | COM) -->
+            <div class="w-full max-w-[370px] mx-auto rounded-2xl bg-gradient-to-b from-[#02434f] to-[#012b33] border-[3.5px] border-[#00f0ff] shadow-[0_4px_16px_rgba(0,0,0,0.7)] flex items-center justify-between px-3.5 py-1.5 mb-1 select-none flex-shrink-0">
+                
+                <!-- Left: "You" (Blue Pin + Yellow text) -->
+                <div id="controlYouSide" class="flex items-center gap-2 cursor-pointer transition transform active:scale-95" onclick="triggerYouDiceClick()">
+                    <!-- Blue Pin Icon -->
+                    <div class="w-8 h-10 flex items-center justify-center filter drop-shadow">
+                        <svg class="w-7 h-9" viewBox="0 0 24 32">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20s12-11 12-20c0-6.63-5.37-12-12-12zm0 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" fill="#00d2ff" stroke="#ffffff" stroke-width="1.2"/>
+                            <circle cx="12" cy="12" r="4" fill="#ffffff"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-2xl font-black italic text-[#ffe600] tracking-wide" style="text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 3px 0 #000;">You</span>
+                        <span id="youSquareBadge" class="text-[10px] font-bold text-sky-200 -mt-1">Sq: 1</span>
+                    </div>
+                </div>
+
+                <!-- Center: Pink Platform + 3D White Die -->
+                <div id="centerDiceContainer" onclick="triggerYouDiceClick()" class="cursor-pointer active:scale-90 transition transform p-1 rounded-2xl bg-gradient-to-b from-[#fed7d7] via-[#fecdd3] to-[#f472b6] border-2 border-[#fb923c] shadow-lg flex items-center justify-center">
+                    <div id="exactSnakeDiceCube" class="w-12 h-12 rounded-xl bg-gradient-to-br from-white via-slate-50 to-slate-200 border border-slate-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),0_3px_6px_rgba(0,0,0,0.3)] flex items-center justify-center relative select-none">
+                        <!-- 3x3 Grid for Realistic Black Pips -->
+                        <div id="exactDicePips" class="w-8 h-8 grid grid-cols-3 grid-rows-3 p-0.5 pointer-events-none"></div>
+                    </div>
+                </div>
+
+                <!-- Right: "Com" (Yellow text + Red Pin with dashed circle) -->
+                <div id="controlComSide" class="flex items-center gap-2 transition opacity-80">
+                    <div class="flex flex-col text-right">
+                        <span class="text-2xl font-black italic text-[#ffe600] tracking-wide" style="text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 3px 0 #000;">Com</span>
+                        <span id="comSquareBadge" class="text-[10px] font-bold text-rose-200 -mt-1">Sq: 1</span>
+                    </div>
+                    <!-- Red Pin Icon with dashed target circle -->
+                    <div class="relative w-8 h-10 flex flex-col items-center justify-center filter drop-shadow">
+                        <svg class="w-7 h-9" viewBox="0 0 24 32">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20s12-11 12-20c0-6.63-5.37-12-12-12zm0 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" fill="#ef4444" stroke="#ffffff" stroke-width="1.2"/>
+                            <circle cx="12" cy="12" r="4" fill="#ffffff"/>
+                        </svg>
+                        <!-- Dashed circle under pin -->
+                        <div class="absolute -bottom-1 w-6 h-2 border-2 border-dashed border-[#00f0ff] rounded-full"></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODALS & POPUPS -->
+    <!-- ========================================================================= -->
+
+    <!-- 1. VS COMPUTER SETUP MODAL -->
+    <div id="computerModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-blue-900 via-indigo-950 to-slate-950 border-2 border-amber-400 rounded-3xl max-w-sm w-full p-5 shadow-2xl relative">
+            <button onclick="closeModal('computerModal')" class="absolute top-3 right-3 text-white/80 hover:text-white font-black text-base w-8 h-8 rounded-full bg-blue-800/80 border border-blue-400 flex items-center justify-center">✕</button>
+            <div class="text-center mb-4">
+                <span class="text-2xl">🤖</span>
+                <h3 class="text-xl font-black text-amber-300">VS COMPUTER</h3>
+                <p class="text-xs text-blue-200">Play against Computer</p>
+            </div>
+
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="text-xs font-bold text-amber-200 block mb-1">Select Players</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setPlayerConfig('2p_bot')" id="btn-mode-2p" class="py-2 rounded-xl bg-blue-700 border-2 border-amber-300 text-xs font-black text-white active:scale-95 transition">2 Players</button>
+                        <button onclick="setPlayerConfig('4p_bot')" id="btn-mode-4p" class="py-2 rounded-xl bg-blue-900 border border-blue-400 text-xs font-black text-white active:scale-95 transition">4 Players</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-amber-200 block mb-1">Choose Your Color</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="selectColorChoice('red')" id="choice-red" class="h-10 rounded-xl bg-red-600 border-2 border-white flex items-center justify-center shadow-lg active:scale-90 transition">🔴</button>
+                        <button onclick="selectColorChoice('green')" id="choice-green" class="h-10 rounded-xl bg-green-600 border border-slate-600 flex items-center justify-center shadow-lg active:scale-90 transition">🟢</button>
+                        <button onclick="selectColorChoice('yellow')" id="choice-yellow" class="h-10 rounded-xl bg-yellow-500 border border-slate-600 flex items-center justify-center shadow-lg active:scale-90 transition">🟡</button>
+                        <button onclick="selectColorChoice('blue')" id="choice-blue" class="h-10 rounded-xl bg-blue-600 border border-slate-600 flex items-center justify-center shadow-lg active:scale-90 transition">🔵</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="launchComputerGame()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-blue-950 font-black text-sm shadow-xl active:scale-95 transition border border-white">
+                START MATCH 🎲
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. PASS N PLAY SETUP MODAL -->
+    <div id="passNPlayModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-blue-900 via-indigo-950 to-slate-950 border-2 border-amber-400 rounded-3xl max-w-sm w-full p-5 shadow-2xl relative">
+            <button onclick="closeModal('passNPlayModal')" class="absolute top-3 right-3 text-white/80 hover:text-white font-black text-base w-8 h-8 rounded-full bg-blue-800/80 border border-blue-400 flex items-center justify-center">✕</button>
+            <div class="text-center mb-4">
+                <span class="text-2xl">👨‍👩‍👧‍👦</span>
+                <h3 class="text-xl font-black text-amber-300">PASS N PLAY</h3>
+                <p class="text-xs text-blue-200">Play together on this device</p>
+            </div>
+
+            <div class="space-y-3 mb-5">
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setPassNPlayCount(2)" id="pnp-2" class="py-2 rounded-xl bg-blue-700 border-2 border-amber-300 text-xs font-black text-white">2 Players</button>
+                    <button onclick="setPassNPlayCount(3)" id="pnp-3" class="py-2 rounded-xl bg-blue-900 border border-blue-400 text-xs font-black text-white">3 Players</button>
+                    <button onclick="setPassNPlayCount(4)" id="pnp-4" class="py-2 rounded-xl bg-blue-900 border border-blue-400 text-xs font-black text-white">4 Players</button>
+                </div>
+
+                <div id="pnpPlayerInputs" class="space-y-2 text-xs">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <button onclick="launchPassNPlayGame()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-blue-950 font-black text-sm shadow-xl active:scale-95 transition border border-white">
+                START LOCAL MATCH 🎲
+            </button>
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <!-- 3. ONLINE MATCHMAKING & REAL HUMAN MULTIPLAYER HUB -->
+    <div id="onlineModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-blue-900 via-indigo-950 to-slate-950 border-2 border-amber-400 rounded-3xl max-w-sm w-full p-4 sm:p-5 shadow-2xl relative text-center max-h-[92vh] overflow-y-auto">
+            <!-- Modal Close Button -->
+            <button onclick="closeOnlineLobbyModal()" class="absolute top-3 right-3 text-white/80 hover:text-white font-black text-base w-8 h-8 rounded-full bg-blue-800/80 border border-blue-400 flex items-center justify-center transition active:scale-95">✕</button>
+            
+            <!-- Header Titles -->
+            <div class="flex items-center justify-center gap-1.5 mb-2 mt-1">
+                <span class="text-xl">🌐</span>
+                <h3 class="text-base font-black text-amber-300 tracking-wider">PLAY ONLINE (REAL PLAYERS)</h3>
+            </div>
+
+            <!-- Active Original Account Banner -->
+            <div class="bg-slate-900/90 border border-amber-400/60 rounded-2xl p-2.5 mb-3 flex items-center justify-between text-left shadow-inner">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="relative w-11 h-11 rounded-xl bg-gradient-to-b from-blue-400 to-blue-800 p-0.5 border-2 border-amber-300 overflow-hidden flex-shrink-0 cursor-pointer" onclick="triggerRealAvatarUpload()" title="Upload real photo">
+                        <img id="onlineUserDisplayAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" alt="Avatar" class="w-full h-full object-cover rounded-[10px]" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=LudoQueen'"/>
+                        <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-600 rounded-full border border-white flex items-center justify-center text-[7px]">📷</div>
+                    </div>
+                    <div class="flex flex-col truncate">
+                        <div class="flex items-center gap-1">
+                            <span id="onlineUserDisplayFlag" class="text-xs">🇮🇳</span>
+                            <span id="onlineUserDisplayName" class="font-black text-xs text-white truncate max-w-[120px]">Rupesh</span>
+                        </div>
+                        <span id="onlineUserDisplayEmail" class="text-[9.5px] text-blue-200 truncate max-w-[150px]">rupeshkumar@gmail.com</span>
+                        <span class="text-[8.5px] text-emerald-400 font-bold flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span> Original Account Active
+                        </span>
+                    </div>
+                </div>
+                <button onclick="closeModal('onlineModal'); openProfileModal();" class="px-2.5 py-1.5 rounded-xl bg-blue-700 hover:bg-blue-600 border border-blue-400 text-white font-bold text-[10px] shadow active:scale-95 transition flex items-center gap-1 flex-shrink-0">
+                    <span>✏️</span> Edit
+                </button>
+            </div>
+
+            <!-- Opponent Connected Notification Card (Shown when opponent connects) -->
+            <div id="liveOpponentFoundBox" class="hidden bg-emerald-950/95 border-2 border-emerald-400 rounded-2xl p-3 mb-3 text-center shadow-lg">
+                <span class="text-xs font-black text-emerald-300 block mb-1">🎉 REAL PLAYER CONNECTED!</span>
+                <div class="flex items-center justify-center gap-3 my-2">
+                    <div class="flex flex-col items-center">
+                        <img id="liveMatchYourAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" class="w-10 h-10 rounded-full border-2 border-red-500 object-cover shadow"/>
+                        <span id="liveMatchYourName" class="text-[10px] font-bold text-white mt-1">You (Red)</span>
+                    </div>
+                    <span class="text-sm font-black text-amber-300">⚔️ VS ⚔️</span>
+                    <div class="flex flex-col items-center">
+                        <img id="liveMatchOppAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest" class="w-10 h-10 rounded-full border-2 border-green-500 object-cover shadow"/>
+                        <span id="liveMatchOppName" class="text-[10px] font-bold text-emerald-300 mt-1">Guest (Green)</span>
+                    </div>
+                </div>
+                <p id="liveMatchCountdownText" class="text-xs font-black text-amber-300 animate-pulse">Starting live match in 3...</p>
+            </div>
+
+            <!-- 1. LIVE REAL HUMAN MATCH (WebRTC Room) -->
+            <div id="liveRoomControlsBox" class="bg-slate-900/90 border border-blue-500/40 rounded-2xl p-3 mb-3 text-left">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-black text-amber-300 uppercase tracking-wide flex items-center gap-1">
+                        <span>👥</span> 1v1 Live Human Match
+                    </span>
+                    <span id="livePeerConnectionStatus" class="text-[9.5px] text-emerald-400 font-bold flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Ready
+                    </span>
+                </div>
+
+                <!-- 6-Digit Room Code Card -->
+                <div class="bg-slate-950 p-2.5 rounded-xl border border-amber-400/50 text-center mb-2.5">
+                    <span class="text-[10px] text-slate-400 block mb-0.5 font-medium">Your Real Match Room Code</span>
+                    <div id="liveRoomCodeDisplay" class="text-2xl font-black text-amber-300 tracking-widest font-mono select-all">
+                        ------
+                    </div>
+                    <span id="liveMatchmakingSubtext" class="text-[10px] text-sky-200 mt-1 block">
+                        Apne dost ya kisi real human ko invite karein
+                    </span>
+                </div>
+
+                <!-- Instant Share Buttons: WhatsApp & Copy Link -->
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <button onclick="shareRoomOnWhatsApp()" class="py-2 px-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white font-black text-xs flex items-center justify-center gap-1.5 shadow active:scale-95 transition border border-emerald-300/40">
+                        <span class="text-sm">💬</span>
+                        <span>WhatsApp Invite</span>
+                    </button>
+                    <button onclick="copyLiveRoomLink()" class="py-2 px-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow active:scale-95 transition border border-sky-300/40">
+                        <span class="text-sm">📋</span>
+                        <span>Copy Link</span>
+                    </button>
+                </div>
+
+                <!-- Join Friend's Room with Code -->
+                <div class="pt-2 border-t border-slate-800">
+                    <label class="text-[10.5px] font-bold text-amber-200 block mb-1">
+                        Dusre player ka 6-digit Code enter karein:
+                    </label>
+                    <div class="flex gap-1.5">
+                        <input id="joinRoomCodeInput" type="text" maxlength="6" placeholder="e.g. 582910" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white text-center focus:outline-none focus:border-amber-400 tracking-wider font-mono uppercase" />
+                        <button onclick="joinLiveRoomFromInput()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-blue-950 font-black text-xs shadow hover:brightness-110 active:scale-95 transition">
+                            Connect
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. QUICK LOBBY MATCH (Public Search) -->
+            <button onclick="startQuickOnlineMatch()" class="w-full py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-black text-xs shadow-md border border-blue-400 hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2 mb-2">
+                <span class="text-sm">⚡</span>
+                <span>QUICK MATCH (FIND RANDOM REAL PLAYER)</span>
+            </button>
+
+            <!-- Close / Cancel Button -->
+            <button onclick="closeOnlineLobbyModal()" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-600 transition active:scale-95">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- 4. PLAY WITH FRIENDS (CREATE / JOIN ROOM) -->
+    <div id="friendsRoomModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-blue-900 via-indigo-950 to-slate-950 border-2 border-amber-400 rounded-3xl max-w-sm w-full p-5 shadow-2xl relative">
+            <button onclick="closeModal('friendsRoomModal')" class="absolute top-3 right-3 text-white/80 hover:text-white font-black text-base w-8 h-8 rounded-full bg-blue-800/80 border border-blue-400 flex items-center justify-center">✕</button>
+            <div class="text-center mb-4">
+                <span class="text-2xl">🎉</span>
+                <h3 class="text-xl font-black text-amber-300">PLAY WITH FRIENDS</h3>
+                <p class="text-xs text-blue-200">Private Room with Voice Chat</p>
+            </div>
+
+            <div class="bg-slate-900/80 p-3 rounded-2xl border border-blue-500/30 mb-3 text-center">
+                <span class="text-[11px] text-slate-400 block mb-1">Your Private Room Code</span>
+                <div class="text-2xl font-black text-amber-300 tracking-widest font-mono bg-blue-950/80 py-1.5 rounded-xl border border-amber-400/40">
+                    849 203
+                </div>
+                <button onclick="copyRoomCode()" class="mt-2 text-xs font-bold text-sky-400 hover:text-sky-300 flex items-center justify-center gap-1 mx-auto">
+                    <span>📋</span> Copy Code
+                </button>
+            </div>
+
+            <div class="space-y-2 mb-4">
+                <label class="text-xs font-bold text-amber-200 block">Or Join Friend's Room</label>
+                <div class="flex gap-2">
+                    <input type="text" placeholder="Enter 6-digit Code" maxlength="6" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white uppercase text-center focus:outline-none focus:border-amber-400">
+                    <button onclick="launchComputerGame()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow">Join</button>
+                </div>
+            </div>
+
+            <button onclick="launchComputerGame()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-blue-950 font-black text-sm shadow-xl active:scale-95 transition border border-white">
+                CREATE ROOM & START
+            </button>
+        </div>
+    </div>
+
+
+   
+    <!-- 7. USER PROFILE MODAL (EDIT NAME & COUNTRY) -->
+    <div id="profileModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-blue-900 via-indigo-950 to-slate-950 border-2 border-amber-400 rounded-3xl max-w-sm w-full p-5 shadow-2xl relative text-center">
+            <!-- Modal Close Button -->
+            <button onclick="closeModal('profileModal')" class="absolute top-3 right-3 text-white/80 hover:text-white font-black text-base w-8 h-8 rounded-full bg-blue-800/80 border border-blue-400 flex items-center justify-center">✕</button>
+            
+            <!-- Modal Header Title -->
+            <div class="flex items-center justify-center gap-1.5 mb-2.5">
+                <span class="text-xl">👤</span>
+                <h3 class="text-lg font-black text-amber-300 tracking-wider">PLAYER PROFILE</h3>
+            </div>
+
+            <!-- Avatar Box -->
+            <div class="relative w-16 h-16 mx-auto rounded-2xl bg-gradient-to-b from-blue-400 to-blue-800 p-1 border-2 border-amber-300 overflow-hidden shadow-xl mb-1.5 cursor-pointer group" onclick="triggerRealAvatarUpload()" title="Tap to upload photo from device">
+                <img id="profileModalAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" alt="Avatar" class="w-full h-full object-cover rounded-xl" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=LudoQueen'"/>
+                <div class="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition rounded-xl">
+                    <span class="text-sm">📷</span>
+                    <span class="text-[8px] font-bold text-white">Change</span>
+                </div>
+                <!-- Online indicator -->
+                <div class="absolute top-1 right-1 w-2.5 h-2.5 bg-emerald-400 border border-white rounded-full shadow"></div>
+                <!-- Camera badge -->
+                <div class="absolute bottom-0.5 right-0.5 w-4 h-4 bg-blue-600 rounded-full border border-white flex items-center justify-center text-[8px] shadow">📷</div>
+            </div>
+            <!-- Hidden Real Photo File Input -->
+            <input id="realAvatarUploadInput" type="file" accept="image/*" class="hidden" onchange="handleRealAvatarUpload(event)" />
+
+            <!-- Profile Info Card (Name, Flag, Country & Level) -->
+            <div class="bg-slate-900/90 border border-blue-400/40 rounded-2xl p-2.5 mb-3 shadow-inner">
+                <div class="flex items-center justify-center gap-1.5 mb-0.5">
+                    <span id="profileDisplayFlag" class="text-xl">🇮🇳</span>
+                    <h3 id="profileDisplayName" class="text-lg font-black text-white tracking-wide">Rupesh</h3>
+                </div>
+                <div class="flex items-center justify-center gap-2 text-xs">
+                    <span class="text-slate-300 font-bold">Country: <b id="profileDisplayCountryName" class="text-amber-300 font-extrabold">India</b></span>
+                    <span class="text-slate-500">•</span>
+                    <span class="text-sky-300 font-semibold text-[11px]">★ Level 1 • Rookie Master</span>
+                </div>
+            </div>
+
+            <!-- 1. PROFILE VIEW SECTION (DEFAULT) -->
+            <div id="profileViewSection" class="space-y-2.5">
+                <!-- Dedicated Edit Profile Button inside Profile -->
+                <button onclick="toggleProfileEditMode(true)" class="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-blue-950 font-black text-xs shadow-lg border border-white hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2">
+                    <span class="text-sm">✏️</span>
+                    <span>EDIT PROFILE</span>
+                </button>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-700">
+                        <span class="text-[10px] text-slate-400 block font-semibold">Matches</span>
+                        <span class="text-sm font-black text-white">14</span>
+                    </div>
+                    <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-700">
+                        <span class="text-[10px] text-slate-400 block font-semibold">Wins</span>
+                        <span class="text-sm font-black text-amber-300">11</span>
+                    </div>
+                    <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-700">
+                        <span class="text-[10px] text-slate-400 block font-semibold">Win Rate</span>
+                        <span class="text-sm font-black text-emerald-400">78%</span>
+                    </div>
+                </div>
+
+                <!-- Close Button -->
+                <button onclick="closeModal('profileModal')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow border border-slate-600 transition active:scale-95">
+                    Close
+                </button>
+            </div>
+
+            <!-- 2. PROFILE EDIT SECTION (SHOWN ON EDIT TAP) -->
+            <div id="profileEditSection" class="hidden space-y-2.5 text-left bg-slate-900/95 border border-amber-400/60 rounded-2xl p-3 shadow-inner">
+                <div class="text-center pb-1 border-b border-slate-800 flex items-center justify-center gap-1.5">
+                    <span class="text-xs">✏️</span>
+                    <span class="text-xs font-black text-amber-300 uppercase tracking-wider">Edit Profile</span>
+                </div>
+
+                <!-- 1. Edit Name Input -->
+                <div>
+                    <label class="text-[11px] font-bold text-amber-200 flex items-center justify-between mb-1">
+                        <span class="flex items-center gap-1">
+                            <span>👤</span>
+                            <span>Player Name</span>
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-normal">Max 15 chars</span>
+                    </label>
+                    <div class="flex items-center bg-slate-950 border-2 border-slate-700 focus-within:border-amber-400 rounded-xl px-2.5 py-1.5 transition">
+                        <span class="text-xs mr-2">🎮</span>
+                        <input id="profileNameInput" type="text" maxlength="15" placeholder="Enter your name" class="bg-transparent text-white font-black text-xs w-full focus:outline-none placeholder-slate-500" value="Rupesh" />
+                    </div>
+                </div>
+
+                <!-- 2. Upload Real Photo Button -->
+                <div>
+                    <button type="button" onclick="triggerRealAvatarUpload()" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 border border-blue-400 text-white font-bold text-xs flex items-center justify-center gap-2 shadow active:scale-95 transition">
+                        <span>📷</span>
+                        <span>Upload Photo from Gallery / Device</span>
+                    </button>
+                </div>
+
+                <!-- 3. Edit Country Selector -->
+                <div>
+                    <label class="text-[11px] font-bold text-amber-200 flex items-center gap-1 mb-1">
+                        <span>🌍</span>
+                        <span>Country / Region</span>
+                    </label>
+                    <div class="flex items-center bg-slate-950 border-2 border-slate-700 focus-within:border-amber-400 rounded-xl px-2.5 py-1.5 transition">
+                        <span id="profileFlagEmojiPreview" class="text-base mr-2 flex-shrink-0">🇮🇳</span>
+                        <select id="profileCountrySelect" onchange="onProfileCountryChange(this.value)" class="bg-transparent text-white font-bold text-xs w-full focus:outline-none cursor-pointer">
+                            <option value="India" style="color:white; background-color:#0f172a;">🇮🇳 India</option>
+                            <option value="United States" style="color:white; background-color:#0f172a;">🇺🇸 United States</option>
+                            <option value="United Kingdom" style="color:white; background-color:#0f172a;">🇬🇧 United Kingdom</option>
+                            <option value="United Arab Emirates" style="color:white; background-color:#0f172a;">🇦🇪 United Arab Emirates</option>
+                            <option value="Saudi Arabia" style="color:white; background-color:#0f172a;">🇸🇦 Saudi Arabia</option>
+                            <option value="Bangladesh" style="color:white; background-color:#0f172a;">🇧🇩 Bangladesh</option>
+                            <option value="Pakistan" style="color:white; background-color:#0f172a;">🇵🇰 Pakistan</option>
+                            <option value="Nepal" style="color:white; background-color:#0f172a;">🇳🇵 Nepal</option>
+                            <option value="Canada" style="color:white; background-color:#0f172a;">🇨🇦 Canada</option>
+                            <option value="Australia" style="color:white; background-color:#0f172a;">🇦🇺 Australia</option>
+                            <option value="Germany" style="color:white; background-color:#0f172a;">🇩🇪 Germany</option>
+                            <option value="France" style="color:white; background-color:#0f172a;">🇫🇷 France</option>
+                            <option value="Brazil" style="color:white; background-color:#0f172a;">🇧🇷 Brazil</option>
+                            <option value="Indonesia" style="color:white; background-color:#0f172a;">🇮🇩 Indonesia</option>
+                            <option value="Global" style="color:white; background-color:#0f172a;">🌍 Other / Global</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Action Buttons: Save & Cancel -->
+                <div class="flex gap-2 pt-1">
+                    <button onclick="toggleProfileEditMode(false)" class="w-1/3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-600 transition active:scale-95">
+                        Cancel
+                    </button>
+                    <button onclick="saveUserProfileFromModal()" class="w-2/3 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-blue-950 font-black text-xs shadow-lg border border-white hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-1.5">
+                        <span>💾</span>
+                        <span>SAVE PROFILE</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. SETTINGS MODAL -->
+    <div id="settingsModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-blue-900 via-indigo-950 to-slate-950 border-2 border-amber-400 rounded-3xl max-w-sm w-full p-5 shadow-2xl relative">
+            <button onclick="closeModal('settingsModal')" class="absolute top-3 right-3 text-white/80 hover:text-white font-black text-base w-8 h-8 rounded-full bg-blue-800/80 border border-blue-400 flex items-center justify-center">✕</button>
+            <div class="text-center mb-4">
+                <span class="text-2xl">⚙️</span>
+                <h3 class="text-xl font-black text-amber-300">SETTINGS</h3>
+            </div>
+
+            <div class="space-y-3 mb-5">
+                <div class="flex items-center justify-between bg-slate-900/80 p-3 rounded-2xl border border-slate-700">
+                    <span class="text-xs font-bold text-white">Sound Effects (SFX)</span>
+                    <button onclick="toggleSound()" id="settingSoundToggle" class="px-3 py-1 rounded-lg bg-emerald-600 text-xs font-black text-white">ON</button>
+                </div>
+                <div class="flex items-center justify-between bg-slate-900/80 p-3 rounded-2xl border border-slate-700">
+                    <span class="text-xs font-bold text-white">Dice Roll Animation</span>
+                    <span class="text-xs font-black text-emerald-400">3D Fast</span>
+                </div>
+                <div class="flex items-center justify-between bg-slate-900/80 p-3 rounded-2xl border border-slate-700">
+                    <span class="text-xs font-bold text-white">Language</span>
+                    <span class="text-xs font-black text-sky-400">English / Hindi</span>
+                </div>
+            </div>
+
+            <button onclick="openRulesModal()" class="w-full py-2 rounded-xl bg-blue-800 text-white font-bold text-xs mb-2">How to Play (Rules)</button>
+            <button onclick="closeModal('settingsModal')" class="w-full py-2.5 rounded-xl bg-slate-800 text-white font-bold text-xs">Close</button>
+        </div>
+    </div>
+
+    <!-- 9. RULES MODAL -->
+    <div id="rulesModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-blue-900 via-indigo-950 to-slate-950 border-2 border-amber-400 rounded-3xl max-w-sm w-full p-5 shadow-2xl relative">
+            <button onclick="closeModal('rulesModal')" class="absolute top-3 right-3 text-white/80 hover:text-white font-black text-base w-8 h-8 rounded-full bg-blue-800/80 border border-blue-400 flex items-center justify-center">✕</button>
+            <div class="text-center mb-3">
+                <h3 class="text-lg font-black text-amber-300">CLASSIC LUDO RULES</h3>
+            </div>
+            <ul class="space-y-2 text-xs text-blue-100 max-h-64 overflow-y-auto pr-1">
+                <li class="flex gap-2"><span>1.</span><span>Roll <b>6</b> to release a token from base yard onto the track.</span></li>
+                <li class="flex gap-2"><span>2.</span><span>Rolling <b>6</b>, capturing an opponent token, or reaching Home grants a <b>Bonus Turn</b>!</span></li>
+                <li class="flex gap-2"><span>3.</span><span>Three consecutive 6s forfeits the player's turn.</span></li>
+                <li class="flex gap-2"><span>4.</span><span>Landing on an opponent's token captures it, sending it back to base yard.</span></li>
+                <li class="flex gap-2"><span>5.</span><span>Star cells (★) and colored start cells are <b>Safe Zones</b> where tokens cannot be captured.</span></li>
+            </ul>
+            <button onclick="closeModal('rulesModal')" class="mt-4 w-full py-2.5 rounded-xl bg-amber-400 text-blue-950 font-black text-xs">Understood!</button>
+        </div>
+    </div>
+
+    <!-- 10. WINNER PODIUM MODAL -->
+    <div id="winnerModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-blue-900 via-indigo-950 to-slate-950 border-2 border-amber-400 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center">
+            <div class="text-4xl mb-2">🏆</div>
+            <h3 class="text-2xl font-black text-amber-300 mb-1">MATCH FINISHED!</h3>
+            <p class="text-xs text-blue-200 mb-4">Official Ludo Standings:</p>
+            <div id="podiumList" class="space-y-2 mb-5 text-left"></div>
+            <button onclick="returnToHomeScreen()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-blue-950 font-black text-sm shadow-xl active:scale-95 transition border border-white">
+                BACK TO LUDO KING HOME
+            </button>
+        </div>
+    </div>
+
+
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-blue-950 border-2 border-amber-400 text-amber-300 px-4 py-2 rounded-2xl text-xs font-black shadow-2xl transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-2">
+        Toast Message
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SCRIPT: GAME ENGINE, AUDIO SYNTHESIS & LUDO KING INTERACTIONS -->
+    <!-- ========================================================================= -->
+    <script>
+        /* -------------------------------------------------------------
+         * 1. WEB AUDIO SYNTHESIS ENGINE
+         * ------------------------------------------------------------- */
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playTone(freq, type = 'sine', duration = 0.08, delay = 0, gainVal = 0.12) {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+                gain.gain.setValueAtTime(gainVal, ctx.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime + delay);
+                osc.stop(ctx.currentTime + delay + duration);
+            } catch (e) {}
+        }
+
+        function playClickSound() {
+            playTone(480, 'sine', 0.04, 0, 0.08);
+        }
+
+        function playCoinSound() {
+            playTone(987.77, 'sine', 0.08, 0, 0.15);
+            playTone(1318.51, 'triangle', 0.14, 0.07, 0.15);
+        }
+
+
+        function sfxDiceRoll() {
+            for (let i = 0; i < 4; i++) {
+                playTone(220 + Math.random() * 180, 'triangle', 0.04, i * 0.055, 0.09);
+            }
+        }
+
+        function sfxStep() {
+            playTone(520, 'sine', 0.05, 0, 0.1);
+        }
+
+        function sfxUnlock() {
+            playTone(440, 'triangle', 0.08, 0, 0.14);
+            playTone(660, 'triangle', 0.12, 0.07, 0.14);
+        }
+
+        function sfxCapture() {
+            playTone(580, 'sawtooth', 0.09, 0, 0.15);
+            playTone(420, 'sawtooth', 0.09, 0.08, 0.15);
+            playTone(260, 'sawtooth', 0.16, 0.16, 0.15);
+        }
+
+        function sfxHomeGoal() {
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((n, idx) => playTone(n, 'triangle', 0.14, idx * 0.08, 0.15));
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const toggleBtn = document.getElementById('settingSoundToggle');
+            const gameSoundBtn = document.getElementById('gameSoundBtn');
+            if (toggleBtn) {
+                toggleBtn.textContent = soundEnabled ? 'ON' : 'OFF';
+                toggleBtn.className = soundEnabled ? 'px-3 py-1 rounded-lg bg-emerald-600 text-xs font-black text-white' : 'px-3 py-1 rounded-lg bg-slate-700 text-xs font-black text-slate-300';
+            }
+            if (gameSoundBtn) {
+                gameSoundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+            }
+            showToast(soundEnabled ? 'Sound Effects Enabled' : 'Sound Effects Muted');
+        }
+
+        /* -------------------------------------------------------------
+         * 2. TOAST NOTIFICATIONS & PERSISTENT CURRENCY
+         * ------------------------------------------------------------- */
+        let userCoins = parseInt(localStorage.getItem('lk_coins') || '10050', 10);
+        let userGems = parseInt(localStorage.getItem('lk_gems') || '50', 10);
+
+        function updateResourceDisplays() {
+            const coinEl = document.getElementById('coinCountDisplay');
+            if (coinEl) coinEl.textContent = userCoins.toLocaleString();
+            const gemEl = document.getElementById('gemCountDisplay');
+            if (gemEl) gemEl.textContent = userGems.toLocaleString();
+            try {
+                localStorage.setItem('lk_coins', userCoins.toString());
+                localStorage.setItem('lk_gems', userGems.toString());
+            } catch(e) {}
+        }
+
+        let toastTimer = null;
+        function showToast(msg) {
+            playClickSound();
+            const el = document.getElementById('toastNotification');
+            el.textContent = msg;
+            el.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+            el.classList.add('opacity-100', 'translate-y-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                el.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+                el.classList.remove('opacity-100', 'translate-y-0');
+            }, 2400);
+        }
+
+        /* -------------------------------------------------------------
+         * 3. LUDO BOARD 15x15 COORDINATES & ENGINE
+         * ------------------------------------------------------------- */
+        const COLORS = ['red', 'green', 'yellow', 'blue'];
+
+        const MAIN_TRACK = [
+            [6,1], [6,2], [6,3], [6,4], [6,5],
+            [5,6], [4,6], [3,6], [2,6], [1,6], [0,6],
+            [0,7], [0,8],
+            [1,8], [2,8], [3,8], [4,8], [5,8],
+            [6,9], [6,10], [6,11], [6,12], [6,13], [6,14],
+            [7,14], [8,14],
+            [8,13], [8,12], [8,11], [8,10], [8,9],
+            [9,8], [10,8], [11,8], [12,8], [13,8], [14,8],
+            [14,7], [14,6],
+            [13,6], [12,6], [11,6], [10,6], [9,6],
+            [8,5], [8,4], [8,3], [8,2], [8,1], [8,0],
+            [7,0], [6,0]
+        ];
+
+        const START_TRACK_INDEX = { red: 0, green: 13, yellow: 26, blue: 39 };
+        const SAFE_TRACK_INDICES = new Set([0, 8, 13, 21, 26, 34, 39, 47]);
+
+        const HOME_PATHS = {
+            red:    [[7,1], [7,2], [7,3], [7,4], [7,5]],
+            green:  [[1,7], [2,7], [3,7], [4,7], [5,7]],
+            yellow: [[7,13], [7,12], [7,11], [7,10], [7,9]],
+            blue:   [[13,7], [12,7], [11,7], [10,7], [9,7]]
+        };
+
+        const GOAL_COORDS = {
+            red:    [[7.15, 6.45], [7.85, 6.45], [7.5, 6.75], [7.5, 6.2]],
+            green:  [[6.45, 7.15], [6.45, 7.85], [6.75, 7.5], [6.2, 7.5]],
+            yellow: [[7.15, 8.55], [7.85, 8.55], [7.5, 8.25], [7.5, 8.8]],
+            blue:   [[8.55, 7.15], [8.55, 7.85], [8.25, 7.5], [8.8, 7.5]]
+        };
+
+        const BASE_YARD_COORDS = {
+            red:    [[2.15, 2.15], [2.15, 3.85], [3.85, 2.15], [3.85, 3.85]],
+            green:  [[2.15, 11.15], [2.15, 12.85], [3.85, 11.15], [3.85, 12.85]],
+            yellow: [[11.15, 11.15], [11.15, 12.85], [12.85, 11.15], [12.85, 12.85]],
+            blue:   [[11.15, 2.15], [11.15, 3.85], [12.85, 2.15], [12.85, 3.85]]
+        };
+
+        const DICE_PIPS = {
+            1: [4],
+            2: [2, 6],
+            3: [2, 4, 6],
+            4: [0, 2, 6, 8],
+            5: [0, 2, 4, 6, 8],
+            6: [0, 2, 3, 5, 6, 8]
+        };
+
+        let players = {
+            red:    { name: 'Rupesh', type: 'Player', active: true },
+            green:  { name: 'Computer 1',  type: 'Computer',    active: true },
+            yellow: { name: 'Computer 2',  type: 'Computer',    active: true },
+            blue:   { name: 'Computer 3',  type: 'Computer',    active: true }
+        };
+
+        let tokens = {};
+        let turnOrder = ['red', 'green', 'yellow', 'blue'];
+        let currentTurnIdx = 0;
+        let currentDice = 1;
+        let consecutiveSixes = 0;
+        let gameState = 'IDLE';
+        let rankings = [];
+        let botTimeout = null;
+
+        function buildLudoBoardDOM() {
+            const board = document.getElementById('ludoBoard');
+            board.innerHTML = '';
+
+            COLORS.forEach(color => {
+                const base = document.createElement('div');
+                base.className = `base-box base-${color}`;
+                const inner = document.createElement('div');
+                inner.className = 'base-inner';
+                for (let i = 0; i < 4; i++) {
+                    const spot = document.createElement('div');
+                    spot.className = 'yard-spot';
+                    inner.appendChild(spot);
+                }
+                base.appendChild(inner);
+                board.appendChild(base);
+            });
+
+            const center = document.createElement('div');
+            center.className = 'center-home';
+            center.innerHTML = `
+                <svg viewBox="0 0 100 100" class="w-full h-full block">
+                    <polygon points="0,0 100,0 50,50" fill="#22c55e" stroke="#0f172a" stroke-width="1.5"/>
+                    <polygon points="100,0 100,100 50,50" fill="#eab308" stroke="#0f172a" stroke-width="1.5"/>
+                    <polygon points="0,100 100,100 50,50" fill="#3b82f6" stroke="#0f172a" stroke-width="1.5"/>
+                    <polygon points="0,0 0,100 50,50" fill="#ef4444" stroke="#0f172a" stroke-width="1.5"/>
+                    <circle cx="50" cy="50" r="14" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+                    <text x="50" y="54" text-anchor="middle" font-size="11" font-weight="900" fill="#0f172a">HOME</text>
+                </svg>
+            `;
+            board.appendChild(center);
+
+            for (let r = 0; r < 15; r++) {
+                for (let c = 0; c < 15; c++) {
+                    if (r < 6 && c < 6) continue;
+                    if (r < 6 && c > 8) continue;
+                    if (r > 8 && c > 8) continue;
+                    if (r > 8 && c < 6) continue;
+                    if (r >= 6 && r <= 8 && c >= 6 && c <= 8) continue;
+
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.style.gridRowStart = r + 1;
+                    cell.style.gridColumnStart = c + 1;
+
+                    if (r === 7 && c >= 1 && c <= 5) cell.classList.add('path-red');
+                    if (c === 7 && r >= 1 && r <= 5) cell.classList.add('path-green');
+                    if (r === 7 && c >= 9 && c <= 13) cell.classList.add('path-yellow');
+                    if (c === 7 && r >= 9 && r <= 13) cell.classList.add('path-blue');
+
+                    if (r === 6 && c === 1) {
+                        cell.classList.add('path-red');
+                        cell.innerHTML = getStarSVG('#ffffff');
+                    } else if (r === 1 && c === 8) {
+                        cell.classList.add('path-green');
+                        cell.innerHTML = getStarSVG('#ffffff');
+                    } else if (r === 8 && c === 13) {
+                        cell.classList.add('path-yellow');
+                        cell.innerHTML = getStarSVG('#ffffff');
+                    } else if (r === 13 && c === 6) {
+                        cell.classList.add('path-blue');
+                        cell.innerHTML = getStarSVG('#ffffff');
+                    }
+
+                    if ((r === 2 && c === 6) || (r === 6 && c === 12) || (r === 12 && c === 8) || (r === 8 && c === 2)) {
+                        cell.innerHTML = getStarSVG('#64748b');
+                    }
+
+                    if (r === 7 && c === 0) cell.innerHTML = `<span class="text-[9px] font-black text-red-500">▶</span>`;
+                    if (r === 0 && c === 7) cell.innerHTML = `<span class="text-[9px] font-black text-green-600">▼</span>`;
+                    if (r === 7 && c === 14) cell.innerHTML = `<span class="text-[9px] font-black text-yellow-600">◀</span>`;
+                    if (r === 14 && c === 7) cell.innerHTML = `<span class="text-[9px] font-black text-blue-600">▲</span>`;
+
+                    board.appendChild(cell);
+                }
+            }
+
+            tokens = {};
+            COLORS.forEach(color => {
+                tokens[color] = [];
+                if (!players[color].active) return;
+
+                for (let i = 0; i < 4; i++) {
+                    const tEl = document.createElement('div');
+                    tEl.className = `token token-${color}`;
+                    tEl.dataset.color = color;
+                    tEl.dataset.index = i;
+                    tEl.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        handleTokenClick(color, i);
+                    });
+                    board.appendChild(tEl);
+                    tokens[color].push({ id: i, color: color, step: -1, el: tEl });
+                }
+            });
+
+            updateAllTokensVisualPosition();
+        }
+
+        function getStarSVG(colorHex) {
+            return `
+                <svg viewBox="0 0 24 24" class="w-3/4 h-3/4 opacity-80 pointer-events-none" fill="${colorHex}">
+                    <path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/>
+                </svg>
+            `;
+        }
+
+        function initDiceBoxes() {
+            COLORS.forEach(color => {
+                const box = document.getElementById(`dice-${color}`);
+                box.innerHTML = '';
+                for (let i = 0; i < 9; i++) {
+                    const pip = document.createElement('div');
+                    pip.className = 'dice-pip';
+                    box.appendChild(pip);
+                }
+                renderDiceFace(color, 6);
+            });
+        }
+
+        function renderDiceFace(color, value) {
+            const box = document.getElementById(`dice-${color}`);
+            if (!box) return;
+            const pips = box.querySelectorAll('.dice-pip');
+            const activeIndices = DICE_PIPS[value] || [];
+            pips.forEach((pip, idx) => {
+                pip.className = 'dice-pip';
+                if (activeIndices.includes(idx)) {
+                    pip.classList.add('visible');
+                    if (value === 6) pip.classList.add('pip-six');
+                    if (value === 1) pip.classList.add('pip-one');
+                }
+            });
+        }
+
+        function getGridCoordForToken(color, tokenIndex, step) {
+            if (step === -1) return BASE_YARD_COORDS[color][tokenIndex];
+            if (step >= 0 && step <= 50) {
+                const trackIdx = (START_TRACK_INDEX[color] + step) % 52;
+                const [r, c] = MAIN_TRACK[trackIdx];
+                return [r + 0.5, c + 0.5];
+            }
+            if (step >= 51 && step <= 55) {
+                const homeIdx = step - 51;
+                const [r, c] = HOME_PATHS[color][homeIdx];
+                return [r + 0.5, c + 0.5];
+            }
+            if (step >= 56) return GOAL_COORDS[color][tokenIndex];
+            return [7.5, 7.5];
+        }
+
+        function updateAllTokensVisualPosition() {
+            const cellGroups = {};
+            COLORS.forEach(color => {
+                if (!players[color].active) return;
+                tokens[color].forEach(token => {
+                    const [r, c] = getGridCoordForToken(color, token.id, token.step);
+                    const key = (token.step >= 0 && token.step <= 55)
+                        ? `cell_${Math.round(r * 10)}_${Math.round(c * 10)}`
+                        : `solo_${color}_${token.id}`;
+                    if (!cellGroups[key]) cellGroups[key] = [];
+                    cellGroups[key].push({ token, r, c });
+                });
+            });
+
+            const stackOffsets = {
+                1: [[0, 0]],
+                2: [[-0.16, -0.16], [0.16, 0.16]],
+                3: [[-0.18, -0.14], [0.18, -0.14], [0, 0.18]],
+                4: [[-0.18, -0.18], [0.18, -0.18], [-0.18, 0.18], [0.18, 0.18]]
+            };
+
+            Object.values(cellGroups).forEach(group => {
+                const count = group.length;
+                const offsets = stackOffsets[Math.min(count, 4)];
+                group.forEach((item, idx) => {
+                    const [dr, dc] = offsets[idx % 4];
+                    const finalR = item.r + dr;
+                    const finalC = item.c + dc;
+                    const topPct = (finalR / 15) * 100;
+                    const leftPct = (finalC / 15) * 100;
+                    item.token.el.style.top = `${topPct}%`;
+                    item.token.el.style.left = `${leftPct}%`;
+                    const scale = count > 1 && item.token.step >= 0 && item.token.step <= 55 ? 0.85 : 1;
+                    if (!item.token.el.classList.contains('eligible')) {
+                        item.token.el.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                    } else {
+                        item.token.el.style.transform = `translate(-50%, -50%)`;
+                    }
+                });
+            });
+        }
+
+        function getCurrentColor() {
+            return turnOrder[currentTurnIdx];
+        }
+
+        function updatePlayerCardsUI() {
+            const activeColor = getCurrentColor();
+            COLORS.forEach(color => {
+                const card = document.getElementById(`card-${color}`);
+                const nameEl = document.getElementById(`name-${color}`);
+                const scoreEl = document.getElementById(`score-${color}`);
+                const hintEl = document.getElementById(`hint-${color}`);
+                const diceEl = document.getElementById(`dice-${color}`);
+
+                const p = players[color];
+                nameEl.textContent = p.name;
+
+                if (!p.active) {
+                    card.classList.add('opacity-30');
+                    scoreEl.textContent = '-/-';
+                    hintEl.textContent = '';
+                    diceEl.classList.add('opacity-30', 'pointer-events-none');
+                    return;
+                }
+
+                card.classList.remove('opacity-30');
+                const finishedCount = tokens[color] ? tokens[color].filter(t => t.step === 56).length : 0;
+                scoreEl.textContent = `${finishedCount}/4`;
+
+                const isTurn = (color === activeColor && gameState !== 'GAME_OVER');
+                if (isTurn) {
+                    card.classList.add('ring-2', 'ring-amber-400');
+                    if (isLiveMultiplayer && color !== myLiveColor) {
+                        diceEl.classList.add('opacity-30', 'pointer-events-none');
+                        hintEl.textContent = `${p.name} Turn...`;
+                    } else {
+                        diceEl.classList.remove('opacity-30', 'pointer-events-none');
+                        if (gameState === 'WAITING_FOR_ROLL') {
+                            hintEl.textContent = p.type === 'human' ? 'Roll Dice!' : 'Computer Rolling...';
+                        } else if (gameState === 'WAITING_FOR_MOVE') {
+                            hintEl.textContent = p.type === 'human' ? 'Pick Token!' : 'Thinking...';
+                        } else {
+                            hintEl.textContent = '';
+                        }
+                    }
+                } else {
+                    card.classList.remove('ring-2', 'ring-amber-400');
+                    diceEl.classList.add('opacity-30', 'pointer-events-none');
+                    hintEl.textContent = rankings.includes(color) ? `Rank #${rankings.indexOf(color) + 1}` : '';
+                }
+            });
+        }
+
+        function startTurn(isBonusTurn = false) {
+            clearTimeout(botTimeout);
+            const color = getCurrentColor();
+
+            if (!players[color].active || rankings.includes(color)) {
+                advanceToNextPlayer();
+                return;
+            }
+
+            if (!isBonusTurn) consecutiveSixes = 0;
+
+            gameState = 'WAITING_FOR_ROLL';
+            clearTokenHighlights();
+            updatePlayerCardsUI();
+
+            const p = players[color];
+            if (isLiveMultiplayer) {
+                if (color === myLiveColor) {
+                    document.getElementById('gameStatusText').textContent = `Your turn! • ${isBonusTurn ? 'Bonus Roll!' : 'Roll Dice'}`;
+                } else {
+                    document.getElementById('gameStatusText').textContent = `${p.name}'s turn • Waiting for roll...`;
+                }
+            } else {
+                document.getElementById('gameStatusText').textContent = `${p.name}'s turn • ${isBonusTurn ? 'Bonus Roll!' : 'Roll Dice'}`;
+            }
+
+            if (p.type === 'bot') {
+                botTimeout = setTimeout(() => {
+                    triggerDiceRoll(color);
+                }, 650);
+            }
+        }
+
+        function handleHumanDiceClick(color) {
+            if (gameState !== 'WAITING_FOR_ROLL') return;
+            if (color !== getCurrentColor()) return;
+            if (players[color].type !== 'human') return;
+            if (isLiveMultiplayer && color !== myLiveColor) return;
+            triggerDiceRoll(color);
+        }
+
+        function triggerDiceRoll(color) {
+            if (gameState !== 'WAITING_FOR_ROLL') return;
+            gameState = 'ROLLING';
+            updatePlayerCardsUI();
+
+            const diceEl = document.getElementById(`dice-${color}`);
+            diceEl.classList.add('rolling');
+            sfxDiceRoll();
+
+            if (isLiveMultiplayer && color === myLiveColor) {
+                liveSendPeerMessage({ type: 'DICE_ROLL_START', color: color });
+            }
+
+            let ticks = 0;
+            const rollInterval = setInterval(() => {
+                const tempFace = Math.floor(Math.random() * 6) + 1;
+                renderDiceFace(color, tempFace);
+                ticks++;
+                if (ticks >= 7) {
+                    clearInterval(rollInterval);
+                    finalizeDiceRoll(color);
+                }
+            }, 55);
+        }
+
+        function finalizeDiceRoll(color, forcedVal = null) {
+            const diceEl = document.getElementById(`dice-${color}`);
+            diceEl.classList.remove('rolling');
+
+            if (forcedVal !== null) {
+                currentDice = forcedVal;
+            } else {
+                currentDice = Math.floor(Math.random() * 6) + 1;
+            }
+            renderDiceFace(color, currentDice);
+
+            if (isLiveMultiplayer && color === myLiveColor) {
+                liveSendPeerMessage({ type: 'DICE_FINALIZED', color: color, value: currentDice });
+            }
+
+            if (currentDice === 6) {
+                consecutiveSixes++;
+                if (consecutiveSixes >= 3) {
+                    document.getElementById('gameStatusText').textContent = `${players[color].name} rolled three 6s! Turn forfeited.`;
+                    setTimeout(() => advanceToNextPlayer(), 1000);
+                    return;
+                }
+            } else {
+                consecutiveSixes = 0;
+            }
+
+            const eligibleTokens = getEligibleTokens(color, currentDice);
+
+            if (eligibleTokens.length === 0) {
+                document.getElementById('gameStatusText').textContent = `${players[color].name} rolled ${currentDice} — No moves.`;
+                setTimeout(() => advanceToNextPlayer(), 850);
+                return;
+            }
+
+            gameState = 'WAITING_FOR_MOVE';
+            updatePlayerCardsUI();
+
+            const allInYard = eligibleTokens.every(t => t.step === -1);
+            if (eligibleTokens.length === 1 || (allInYard && players[color].type === 'bot')) {
+                if (isLiveMultiplayer) {
+                    if (color === myLiveColor) {
+                        setTimeout(() => {
+                            const chosen = eligibleTokens[0];
+                            const tokenIdx = tokens[color].indexOf(chosen);
+                            liveSendPeerMessage({ type: 'MOVE_TOKEN', color: color, tokenIndex: tokenIdx });
+                            executeTokenMove(chosen);
+                        }, 360);
+                    } else {
+                        document.getElementById('gameStatusText').textContent = `${players[color].name} is choosing a move...`;
+                    }
+                } else {
+                    setTimeout(() => executeTokenMove(eligibleTokens[0]), 360);
+                }
+                return;
+            }
+
+            if (players[color].type === 'bot') {
+                botTimeout = setTimeout(() => {
+                    const chosen = chooseSmartBotToken(color, eligibleTokens, currentDice);
+                    executeTokenMove(chosen);
+                }, 550);
+            } else {
+                if (isLiveMultiplayer && color !== myLiveColor) {
+                    document.getElementById('gameStatusText').textContent = `${players[color].name} rolled ${currentDice} — Selecting token...`;
+                } else {
+                    document.getElementById('gameStatusText').textContent = `${players[color].name} rolled ${currentDice} — Select glowing token!`;
+                    eligibleTokens.forEach(t => t.el.classList.add('eligible'));
+                    updateAllTokensVisualPosition();
+                }
+            }
+        }
+
+        function getEligibleTokens(color, diceVal) {
+            return tokens[color].filter(t => {
+                if (t.step === -1) return diceVal === 6;
+                if (t.step >= 56) return false;
+                return (t.step + diceVal) <= 56;
+            });
+        }
+
+        function clearTokenHighlights() {
+            COLORS.forEach(c => {
+                if (!tokens[c]) return;
+                tokens[c].forEach(t => t.el.classList.remove('eligible'));
+            });
+            updateAllTokensVisualPosition();
+        }
+
+        function handleTokenClick(color, tokenIndex) {
+            if (gameState !== 'WAITING_FOR_MOVE') return;
+            if (color !== getCurrentColor()) return;
+            if (players[color].type !== 'human') return;
+            if (isLiveMultiplayer && color !== myLiveColor) return;
+
+            const token = tokens[color][tokenIndex];
+            const eligible = getEligibleTokens(color, currentDice);
+            if (!eligible.includes(token)) return;
+
+            if (isLiveMultiplayer && color === myLiveColor) {
+                liveSendPeerMessage({ type: 'MOVE_TOKEN', color: color, tokenIndex: tokenIndex });
+            }
+
+            executeTokenMove(token);
+        }
+
+        async function executeTokenMove(token) {
+            gameState = 'ANIMATING';
+            clearTokenHighlights();
+            updatePlayerCardsUI();
+
+            const color = token.color;
+            let capturedOpponent = false;
+            let reachedGoal = false;
+
+            if (token.step === -1) {
+                token.step = 0;
+                sfxUnlock();
+                updateAllTokensVisualPosition();
+                await delay(250);
+            } else {
+                for (let s = 0; s < currentDice; s++) {
+                    token.step++;
+                    sfxStep();
+                    updateAllTokensVisualPosition();
+                    await delay(150);
+                }
+            }
+
+            if (token.step === 56) {
+                reachedGoal = true;
+                sfxHomeGoal();
+                updatePlayerCardsUI();
+
+                const allHome = tokens[color].every(t => t.step === 56);
+                if (allHome && !rankings.includes(color)) {
+                    rankings.push(color);
+                    document.getElementById('gameStatusText').textContent = `🎉 ${players[color].name} completed all tokens!`;
+                    await delay(800);
+
+                    if (checkMatchEndCondition()) {
+                        showWinnerModal();
+                        return;
+                    }
+                }
+            } else if (token.step >= 0 && token.step <= 50) {
+                const targetTrackIdx = (START_TRACK_INDEX[color] + token.step) % 52;
+                if (!SAFE_TRACK_INDICES.has(targetTrackIdx)) {
+                    const opponents = getOpponentTokensAtTrackIndex(color, targetTrackIdx);
+                    if (opponents.length > 0) {
+                        capturedOpponent = true;
+                        sfxCapture();
+                        opponents.forEach(opp => { opp.step = -1; });
+                        updateAllTokensVisualPosition();
+                        document.getElementById('gameStatusText').textContent = `💥 Captured opponent! Bonus Roll!`;
+                        await delay(450);
+                    }
+                }
+            }
+
+            const playerFinishedAll = rankings.includes(color);
+            if (!playerFinishedAll && (currentDice === 6 || capturedOpponent || reachedGoal)) {
+                startTurn(true);
+            } else {
+                advanceToNextPlayer();
+            }
+        }
+
+        function getOpponentTokensAtTrackIndex(myColor, trackIdx) {
+            const found = [];
+            COLORS.forEach(c => {
+                if (c === myColor || !players[c].active) return;
+                tokens[c].forEach(t => {
+                    if (t.step >= 0 && t.step <= 50) {
+                        const globalIdx = (START_TRACK_INDEX[c] + t.step) % 52;
+                        if (globalIdx === trackIdx) found.push(t);
+                    }
+                });
+            });
+            return found;
+        }
+
+        function advanceToNextPlayer() {
+            const activeColors = turnOrder.filter(c => players[c].active && !rankings.includes(c));
+            if (activeColors.length <= 1) {
+                if (activeColors.length === 1 && !rankings.includes(activeColors[0])) {
+                    rankings.push(activeColors[0]);
+                }
+                showWinnerModal();
+                return;
+            }
+
+            for (let i = 1; i <= 4; i++) {
+                const nextIdx = (currentTurnIdx + i) % 4;
+                const nextColor = turnOrder[nextIdx];
+                if (players[nextColor].active && !rankings.includes(nextColor)) {
+                    currentTurnIdx = nextIdx;
+                    break;
+                }
+            }
+            startTurn(false);
+        }
+
+        function checkMatchEndCondition() {
+            const remaining = turnOrder.filter(c => players[c].active && !rankings.includes(c));
+            if (remaining.length <= 1) {
+                if (remaining.length === 1) rankings.push(remaining[0]);
+                return true;
+            }
+            return false;
+        }
+
+        function chooseSmartBotToken(color, eligibleTokens, diceVal) {
+            let bestToken = eligibleTokens[0];
+            let bestScore = -9999;
+
+            eligibleTokens.forEach(token => {
+                let score = 0;
+                if (token.step === -1 && diceVal === 6) {
+                    score += 85;
+                } else {
+                    const destStep = token.step + diceVal;
+                    if (destStep === 56) score += 120;
+                    else if (token.step <= 50 && destStep >= 51) score += 75;
+                    else if (destStep <= 50) {
+                        const destGlobalIdx = (START_TRACK_INDEX[color] + destStep) % 52;
+                        if (!SAFE_TRACK_INDICES.has(destGlobalIdx)) {
+                            const victims = getOpponentTokensAtTrackIndex(color, destGlobalIdx);
+                            if (victims.length > 0) score += 140;
+                        }
+                        if (SAFE_TRACK_INDICES.has(destGlobalIdx)) score += 45;
+                        score += (destStep * 0.7);
+                    }
+                }
+                score += Math.random() * 5;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestToken = token;
+                }
+            });
+            return bestToken;
+        }
+
+        function showWinnerModal() {
+            gameState = 'GAME_OVER';
+            updatePlayerCardsUI();
+            const list = document.getElementById('podiumList');
+            list.innerHTML = '';
+            const medals = ['🥇 1st Place', '🥈 2nd Place', '🥉 3rd Place', '4th Place'];
+
+            rankings.forEach((color, idx) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between bg-slate-900 px-3 py-2.5 rounded-xl border border-slate-700';
+                row.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-black text-amber-400">${medals[idx] || ''}</span>
+                        <span class="w-3 h-3 rounded-full bg-${color === 'yellow' ? 'yellow-400' : color + '-500'}"></span>
+                        <span class="font-bold text-white text-xs">${players[color].name}</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-300 uppercase">${players[color].type === 'bot' ? 'Computer' : 'Human'}</span>
+                `;
+                list.appendChild(row);
+            });
+
+            if (rankings[0] && players[rankings[0]].type === 'human') {
+                userCoins += 1500;
+                userGems += 5;
+                updateResourceDisplays();
+                playCoinSound();
+                showToast('🏆 Victory! Congratulations, You Won!');
+            }
+
+            openModal('winnerModal');
+        }
+
+        function delay(ms) {
+            return new Promise(res => setTimeout(res, ms));
+        }
+
+        /* -------------------------------------------------------------
+         * 4. UI SCREEN TRANSITIONS & NAVIGATION
+         * ------------------------------------------------------------- */
+        function returnToHomeScreen() {
+            playClickSound();
+            closeAllModals();
+            clearTimeout(botTimeout);
+            if (isLiveMultiplayer) {
+                liveSendPeerMessage({ type: 'PLAYER_LEFT' });
+                if (liveConn) { try { liveConn.close(); } catch(e){} liveConn = null; }
+                if (livePeer) { try { livePeer.destroy(); } catch(e){} livePeer = null; }
+                isLiveMultiplayer = false;
+            }
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('flex');
+            document.getElementById('homeScreen').classList.remove('hidden');
+            document.getElementById('homeScreen').classList.add('flex');
+        }
+
+        function confirmExitGame() {
+            if (confirm('Leave match and return to Ludo King Home?')) {
+                returnToHomeScreen();
+            }
+        }
+
+        function enterGameScreen() {
+            closeAllModals();
+            document.getElementById('homeScreen').classList.add('hidden');
+            document.getElementById('homeScreen').classList.remove('flex');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('flex');
+
+            clearTimeout(botTimeout);
+            rankings = [];
+            consecutiveSixes = 0;
+            currentTurnIdx = turnOrder.findIndex(c => players[c].active);
+            if (currentTurnIdx === -1) currentTurnIdx = 0;
+
+            buildLudoBoardDOM();
+            initDiceBoxes();
+            startTurn(false);
+        }
+
+        /* -------------------------------------------------------------
+         * 5. MODAL MANAGERS & GAME LAUNCHERS
+         * ------------------------------------------------------------- */
+        function openModal(id) {
+            playClickSound();
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('hidden');
+                el.classList.add('flex');
+            }
+        }
+
+        function closeModal(id) {
+            playClickSound();
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            }
+        }
+
+        function closeAllModals() {
+            document.querySelectorAll('[id$="Modal"]').forEach(m => {
+                m.classList.add('hidden');
+                m.classList.remove('flex');
+            });
+        }
+
+        // VS Computer Modal
+        let chosenColor = 'red';
+        let computerMatchMode = '4p_bot';
+
+        function openComputerSetupModal() {
+            openModal('computerModal');
+        }
+
+        function setPlayerConfig(mode) {
+            playClickSound();
+            computerMatchMode = mode;
+            document.getElementById('btn-mode-2p').className = mode === '2p_bot' ? 'py-2 rounded-xl bg-blue-700 border-2 border-amber-300 text-xs font-black text-white active:scale-95 transition' : 'py-2 rounded-xl bg-blue-900 border border-blue-400 text-xs font-black text-white active:scale-95 transition';
+            document.getElementById('btn-mode-4p').className = mode === '4p_bot' ? 'py-2 rounded-xl bg-blue-700 border-2 border-amber-300 text-xs font-black text-white active:scale-95 transition' : 'py-2 rounded-xl bg-blue-900 border border-blue-400 text-xs font-black text-white active:scale-95 transition';
+        }
+
+        function selectColorChoice(color) {
+            playClickSound();
+            chosenColor = color;
+            COLORS.forEach(c => {
+                const btn = document.getElementById(`choice-${c}`);
+                if (c === color) {
+                    btn.classList.add('border-2', 'border-white', 'ring-2', 'ring-amber-300');
+                } else {
+                    btn.classList.remove('border-2', 'border-white', 'ring-2', 'ring-amber-300');
+                }
+            });
+        }
+
+        function launchComputerGame() {
+            if (computerMatchMode === '2p_bot') {
+                const oppColor = chosenColor === 'red' ? 'yellow' : (chosenColor === 'green' ? 'blue' : (chosenColor === 'yellow' ? 'red' : 'green'));
+                COLORS.forEach(c => {
+                    if (c === chosenColor) {
+                        players[c] = { name: `${userProfile.name} (You)`, type: 'human', active: true };
+                    } else if (c === oppColor) {
+                        players[c] = { name: 'Computer', type: 'bot', active: true };
+                    } else {
+                        players[c] = { name: c, type: 'bot', active: false };
+                    }
+                });
+            } else {
+                COLORS.forEach(c => {
+                    if (c === chosenColor) {
+                        players[c] = { name: `${userProfile.name} (You)`, type: 'human', active: true };
+                    } else {
+                        players[c] = { name: 'Computer', type: 'bot', active: true };
+                    }
+                });
+            }
+            enterGameScreen();
+        }
+
+        // Pass N Play Modal
+        let passNPlayPlayerCount = 4;
+        function openPassNPlayModal() {
+            setPassNPlayCount(4);
+            openModal('passNPlayModal');
+        }
+
+        function setPassNPlayCount(count) {
+            playClickSound();
+            passNPlayPlayerCount = count;
+            [2, 3, 4].forEach(n => {
+                const btn = document.getElementById(`pnp-${n}`);
+                btn.className = n === count ? 'py-2 rounded-xl bg-blue-700 border-2 border-amber-300 text-xs font-black text-white' : 'py-2 rounded-xl bg-blue-900 border border-blue-400 text-xs font-black text-white';
+            });
+
+            const container = document.getElementById('pnpPlayerInputs');
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const c = COLORS[i];
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-700';
+                row.innerHTML = `
+                    <span class="w-3 h-3 rounded-full bg-${c === 'yellow' ? 'yellow-400' : c + '-500'}"></span>
+                    <input id="pnp-name-${c}" type="text" value="Player ${i+1}" maxlength="12" class="bg-transparent text-white font-bold text-xs focus:outline-none flex-1"/>
+                `;
+                container.appendChild(row);
+            }
+        }
+
+        function launchPassNPlayGame() {
+            COLORS.forEach((c, idx) => {
+                if (idx < passNPlayPlayerCount) {
+                    const input = document.getElementById(`pnp-name-${c}`);
+                    const name = input ? input.value.trim() : `Player ${idx+1}`;
+                    players[c] = { name: name || `Player ${idx+1}`, type: 'human', active: true };
+                } else {
+                    players[c] = { name: c, type: 'human', active: false };
+                }
+            });
+            enterGameScreen();
+        }
+
+        // =============================================================
+        // USER AUTHENTICATION (FACEBOOK / GOOGLE FOR PLAY ONLINE)
+        // =============================================================
+        let userAuth = {
+            isLoggedIn: false,
+            provider: null, // 'facebook' | 'google'
+            accountName: '',
+            bonusClaimed: false
+        };
+
+        function loadUserAuth() {
+            try {
+                const saved = localStorage.getItem('ludo_user_auth');
+                if (saved) {
+                    userAuth = Object.assign(userAuth, JSON.parse(saved));
+                }
+            } catch(e) {}
+            updateAuthDisplays();
+        }
+
+        function saveUserAuth() {
+            try {
+                localStorage.setItem('ludo_user_auth', JSON.stringify(userAuth));
+            } catch(e) {}
+        }
+
+        function updateAuthDisplays() {
+            const iconEl = document.getElementById('profileAuthIcon');
+            const textEl = document.getElementById('profileAuthStatusText');
+            const btnEl = document.getElementById('profileAuthBtn');
+
+            if (userAuth.isLoggedIn) {
+                if (iconEl) iconEl.textContent = (userAuth.provider === 'facebook') ? '📘' : '🌐';
+                if (textEl) {
+                    const display = userAuth.email ? userAuth.email : (userAuth.provider === 'facebook' ? `${userAuth.accountName} (FB)` : 'Google Account');
+                    textEl.textContent = display;
+                    textEl.title = display;
+                }
+                if (btnEl) {
+                    btnEl.textContent = 'Logout';
+                    btnEl.className = 'px-2.5 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-600 text-white font-black text-[10px] shadow border border-rose-400 active:scale-95 transition';
+                }
+            } else {
+                if (iconEl) iconEl.textContent = '👤';
+                if (textEl) textEl.textContent = 'Guest (Login for Online)';
+                if (btnEl) {
+                    btnEl.textContent = 'Login';
+                    btnEl.className = 'px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] shadow border border-blue-400 active:scale-95 transition';
+                }
+            }
+        }
+
+        function handleAuthActionBtn() {
+            if (userAuth.isLoggedIn) {
+                logoutUser();
+            } else {
+                closeModal('profileModal');
+                openModal('loginModal');
+            }
+        }
+
+        function logoutUser() {
+            playClickSound();
+            userAuth.isLoggedIn = false;
+            userAuth.provider = null;
+            userAuth.email = '';
+            userAuth.accountName = '';
+            saveUserAuth();
+            updateAuthDisplays();
+            showToast('Logged out! You are now playing as Guest.');
+        }
+
+        // --- Google / Gmail Account Selection Flow ---
+        function openGoogleLoginModal() {
+            playClickSound();
+            closeModal('loginModal');
+            const accName1 = document.getElementById('googleAccountName1');
+            if (accName1) accName1.textContent = userProfile.name || 'Rupesh Kumar';
+            const customBox = document.getElementById('customGmailBox');
+            if (customBox) customBox.classList.add('hidden');
+            const customInput = document.getElementById('customGmailInput');
+            if (customInput) customInput.value = '';
+            openModal('googleAccountModal');
+        }
+
+        function selectGoogleAccount(accountName, email) {
+            playClickSound();
+            closeModal('googleAccountModal');
+            showToast(`Signing in as ${email}...`);
+
+            setTimeout(() => {
+                userAuth.isLoggedIn = true;
+                userAuth.provider = 'google';
+                userAuth.email = email;
+                userAuth.accountName = accountName;
+
+                let bonusMsg = '';
+                if (!userAuth.bonusClaimed) {
+                    userAuth.bonusClaimed = true;
+                    userCoins += 5000;
+                    updateResourceDisplays();
+                    playCoinSound();
+                    bonusMsg = ' (+5,000 Coins Added!)';
+                }
+
+                saveUserAuth();
+                updateAuthDisplays();
+                showToast(`Logged in as ${email}!${bonusMsg}`);
+
+                setTimeout(() => {
+                    startOnlineMatchmaking();
+                }, 500);
+            }, 600);
+        }
+
+        function toggleCustomGmailBox() {
+            playClickSound();
+            const box = document.getElementById('customGmailBox');
+            if (box) {
+                box.classList.toggle('hidden');
+                if (!box.classList.contains('hidden')) {
+                    const inp = document.getElementById('customGmailInput');
+                    if (inp) inp.focus();
+                }
+            }
+        }
+
+        function submitCustomGoogleAccount() {
+            const inp = document.getElementById('customGmailInput');
+            let email = inp ? inp.value.trim() : '';
+            if (!email) {
+                showToast('Kripya apna Gmail address enter karein!');
+                return;
+            }
+            if (!email.includes('@')) {
+                email += '@gmail.com';
+            }
+            const name = email.split('@')[0];
+            selectGoogleAccount(name, email);
+        }
+
+        // --- Facebook Account Selection Flow ---
+        function openFacebookLoginModal() {
+            playClickSound();
+            closeModal('loginModal');
+            const nameEl = document.getElementById('fbAccountNameDisplay');
+            if (nameEl) nameEl.textContent = userProfile.name || 'Rupesh Kumar';
+            openModal('facebookAccountModal');
+        }
+
+        function confirmFacebookLogin() {
+            playClickSound();
+            closeModal('facebookAccountModal');
+            showToast('Logging in with Facebook...');
+
+            setTimeout(() => {
+                userAuth.isLoggedIn = true;
+                userAuth.provider = 'facebook';
+                userAuth.accountName = userProfile.name || 'Rupesh Kumar';
+                userAuth.email = 'facebook.user@fb.com';
+
+                let bonusMsg = '';
+                if (!userAuth.bonusClaimed) {
+                    userAuth.bonusClaimed = true;
+                    userCoins += 5000;
+                    updateResourceDisplays();
+                    playCoinSound();
+                    bonusMsg = ' (+5,000 Coins Added!)';
+                }
+
+                saveUserAuth();
+                updateAuthDisplays();
+                showToast(`Connected via Facebook!${bonusMsg}`);
+
+                setTimeout(() => {
+                    startOnlineMatchmaking();
+                }, 500);
+            }, 600);
+        }
+
+        // =============================================================
+        // REAL HUMAN ONLINE MULTIPLAYER (WEBRTC PEERJS ENGINE)
+        // =============================================================
+        let livePeer = null;
+        let liveConn = null;
+        let isLiveMultiplayer = false;
+        let myLiveRole = 'host'; // 'host' (Red) or 'guest' (Green)
+        let myLiveColor = 'red';
+        let currentLiveRoomCode = '';
+        let remotePlayerInfo = {
+            name: 'Opponent',
+            avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Guest',
+            flag: '🇮🇳',
+            country: 'India',
+            email: ''
+        };
+        let liveCountdownInterval = null;
+
+        function openOnlineMatchmaking() {
+            playTone(600, 'sine', 0.1);
+            showToast('🚀 Play Online feature jald hi aane wala hai! (Coming Soon)');
+        }
+
+        function openOnlineLobbyModal() {
+            updateUserProfileDisplays();
+            const oppBox = document.getElementById('liveOpponentFoundBox');
+            if (oppBox) oppBox.classList.add('hidden');
+            const controlsBox = document.getElementById('liveRoomControlsBox');
+            if (controlsBox) controlsBox.classList.remove('hidden');
+
+            openModal('onlineModal');
+            initLiveHostRoom();
+        }
+
+        function closeOnlineLobbyModal() {
+            if (!isLiveMultiplayer) {
+                if (liveConn) { try { liveConn.close(); } catch(e){} liveConn = null; }
+                if (livePeer) { try { livePeer.destroy(); } catch(e){} livePeer = null; }
+                if (liveCountdownInterval) clearInterval(liveCountdownInterval);
+            }
+            closeModal('onlineModal');
+        }
+
+        function initLiveHostRoom() {
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            currentLiveRoomCode = code;
+
+            const codeDisplay = document.getElementById('liveRoomCodeDisplay');
+            if (codeDisplay) codeDisplay.textContent = code;
+
+            const statusEl = document.getElementById('livePeerConnectionStatus');
+            if (statusEl) statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Host Ready';
+
+            const subtext = document.getElementById('liveMatchmakingSubtext');
+            if (subtext) subtext.textContent = 'Room active! WhatsApp invite ya code share karein';
+
+            if (liveConn) { try { liveConn.close(); } catch(e){} liveConn = null; }
+            if (livePeer) { try { livePeer.destroy(); } catch(e){} livePeer = null; }
+
+            try {
+                if (typeof Peer === 'undefined') {
+                    console.warn('PeerJS library not loaded.');
+                    return;
+                }
+                livePeer = new Peer('ludoking-live-' + code, {
+                    config: {
+                        iceServers: [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:global.stun.twilio.com:3478' }
+                        ]
+                    }
+                });
+
+                livePeer.on('open', (id) => {
+                    console.log('Live Host Peer opened:', id);
+                });
+
+                livePeer.on('connection', (conn) => {
+                    console.log('Guest incoming connection received!');
+                    setupLiveConnection(conn, 'host');
+                });
+
+                livePeer.on('error', (err) => {
+                    console.warn('Host Peer error:', err);
+                    if (err.type === 'unavailable-id') {
+                        setTimeout(() => initLiveHostRoom(), 500);
+                    }
+                });
+            } catch(err) {
+                console.error('Error starting live host room:', err);
+            }
+        }
+
+        function joinLiveRoomFromInput() {
+            playClickSound();
+            const input = document.getElementById('joinRoomCodeInput');
+            const code = input ? input.value.trim() : '';
+            if (!code || code.length !== 6) {
+                showToast('Kripya 6-digit room code enter karein!');
+                return;
+            }
+            joinLivePeerRoom(code);
+        }
+
+        function joinLivePeerRoom(code) {
+            const cleanCode = code.replace(/\D/g, '').trim();
+            if (cleanCode.length !== 6) {
+                showToast('Please enter a valid 6-digit room code!');
+                return;
+            }
+
+            currentLiveRoomCode = cleanCode;
+            const codeDisplay = document.getElementById('liveRoomCodeDisplay');
+            if (codeDisplay) codeDisplay.textContent = cleanCode;
+
+            const subtext = document.getElementById('liveMatchmakingSubtext');
+            if (subtext) subtext.textContent = `Room ${cleanCode} se connect ho raha hai...`;
+
+            const statusEl = document.getElementById('livePeerConnectionStatus');
+            if (statusEl) statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-spin"></span> Connecting...';
+
+            if (liveConn) { try { liveConn.close(); } catch(e){} liveConn = null; }
+            if (livePeer) { try { livePeer.destroy(); } catch(e){} livePeer = null; }
+
+            try {
+                if (typeof Peer === 'undefined') {
+                    showToast('PeerJS not available!');
+                    return;
+                }
+                livePeer = new Peer({
+                    config: {
+                        iceServers: [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:global.stun.twilio.com:3478' }
+                        ]
+                    }
+                });
+
+                livePeer.on('open', (id) => {
+                    console.log('Guest Peer opened with ID:', id);
+                    const conn = livePeer.connect('ludoking-live-' + cleanCode, { reliable: true });
+                    setupLiveConnection(conn, 'guest');
+                });
+
+                livePeer.on('error', (err) => {
+                    console.warn('Guest Peer error:', err);
+                    showToast('Connection failed! Check room code.');
+                    if (statusEl) statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span> Disconnected';
+                    if (subtext) subtext.textContent = 'Room connect nahi ho paya. Dobara koshish karein.';
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function setupLiveConnection(conn, role) {
+            liveConn = conn;
+            myLiveRole = role;
+            myLiveColor = (role === 'host') ? 'red' : 'green';
+
+            conn.on('open', () => {
+                console.log(`Live connection active as ${role}!`);
+                playTone(750, 'triangle', 0.12);
+                liveSendPeerMessage({
+                    type: 'HANDSHAKE',
+                    name: userProfile.name,
+                    avatar: userProfile.avatar,
+                    flag: userProfile.flag,
+                    country: userProfile.country,
+                    email: userProfile.email
+                });
+            });
+
+            conn.on('data', (data) => {
+                handleLivePeerData(data);
+            });
+
+            conn.on('close', () => {
+                handleLivePeerDisconnect();
+            });
+
+            conn.on('error', (err) => {
+                console.warn('Live conn error:', err);
+            });
+        }
+
+        function liveSendPeerMessage(msg) {
+            if (liveConn && liveConn.open) {
+                try {
+                    liveConn.send(msg);
+                } catch(e) {
+                    console.error('Send error:', e);
+                }
+            }
+        }
+
+        function handleLivePeerData(data) {
+            if (!data || !data.type) return;
+
+            if (data.type === 'HANDSHAKE') {
+                remotePlayerInfo = data;
+                if (myLiveRole === 'host') {
+                    liveSendPeerMessage({
+                        type: 'HANDSHAKE_ACK',
+                        name: userProfile.name,
+                        avatar: userProfile.avatar,
+                        flag: userProfile.flag,
+                        country: userProfile.country,
+                        email: userProfile.email
+                    });
+                    showLiveOpponentFoundUI();
+                }
+            } else if (data.type === 'HANDSHAKE_ACK') {
+                remotePlayerInfo = data;
+                showLiveOpponentFoundUI();
+            } else if (data.type === 'START_MATCH') {
+                startLiveMultiplayerGame();
+            } else if (data.type === 'DICE_ROLL_START') {
+                handleRemoteDiceRollStart(data.color);
+            } else if (data.type === 'DICE_FINALIZED') {
+                finalizeDiceRoll(data.color, data.value);
+            } else if (data.type === 'MOVE_TOKEN') {
+                handleRemoteTokenMove(data.color, data.tokenIndex);
+            } else if (data.type === 'PLAYER_LEFT') {
+                showToast(`${remotePlayerInfo.name || 'Opponent'} match chhod kar chala gaya! You win!`);
+                userCoins += 2000;
+                updateResourceDisplays();
+                playWinSound();
+            }
+        }
+
+        function handleLivePeerDisconnect() {
+            if (isLiveMultiplayer) {
+                showToast('Opponent disconnected! Match ended.');
+            }
+        }
+
+        function showLiveOpponentFoundUI() {
+            playTone(900, 'sine', 0.2);
+            playCoinSound();
+
+            const yourAvatarEl = document.getElementById('liveMatchYourAvatar');
+            if (yourAvatarEl) yourAvatarEl.src = userProfile.avatar;
+            const yourNameEl = document.getElementById('liveMatchYourName');
+            if (yourNameEl) yourNameEl.textContent = `${userProfile.name} (${myLiveColor === 'red' ? 'Host/Red' : 'Guest/Green'})`;
+
+            const oppAvatarEl = document.getElementById('liveMatchOppAvatar');
+            if (oppAvatarEl) oppAvatarEl.src = remotePlayerInfo.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=Guest';
+            const oppNameEl = document.getElementById('liveMatchOppName');
+            if (oppNameEl) oppNameEl.textContent = `${remotePlayerInfo.name || 'Player 2'} (${myLiveColor === 'red' ? 'Guest/Green' : 'Host/Red'})`;
+
+            const oppBox = document.getElementById('liveOpponentFoundBox');
+            if (oppBox) oppBox.classList.remove('hidden');
+
+            const controlsBox = document.getElementById('liveRoomControlsBox');
+            if (controlsBox) controlsBox.classList.add('hidden');
+
+            let countdown = 3;
+            const countdownEl = document.getElementById('liveMatchCountdownText');
+            if (countdownEl) countdownEl.textContent = `Starting live match in ${countdown}...`;
+
+            if (liveCountdownInterval) clearInterval(liveCountdownInterval);
+            liveCountdownInterval = setInterval(() => {
+                countdown--;
+                if (countdownEl) countdownEl.textContent = `Starting live match in ${countdown}...`;
+                if (countdown <= 0) {
+                    clearInterval(liveCountdownInterval);
+                    if (myLiveRole === 'host') {
+                        liveSendPeerMessage({ type: 'START_MATCH' });
+                        startLiveMultiplayerGame();
+                    }
+                }
+            }, 1000);
+        }
+
+        function startLiveMultiplayerGame() {
+            if (liveCountdownInterval) clearInterval(liveCountdownInterval);
+            isLiveMultiplayer = true;
+
+            if (myLiveRole === 'host') {
+                players['red'] = { name: `${userProfile.name} (You)`, avatar: userProfile.avatar, type: 'human', active: true };
+                players['green'] = { name: remotePlayerInfo.name || 'Opponent', avatar: remotePlayerInfo.avatar, type: 'human', active: true };
+                players['yellow'] = { name: 'Yellow', type: 'bot', active: false };
+                players['blue'] = { name: 'Blue', type: 'bot', active: false };
+            } else {
+                players['red'] = { name: remotePlayerInfo.name || 'Host', avatar: remotePlayerInfo.avatar, type: 'human', active: true };
+                players['green'] = { name: `${userProfile.name} (You)`, avatar: userProfile.avatar, type: 'human', active: true };
+                players['yellow'] = { name: 'Yellow', type: 'bot', active: false };
+                players['blue'] = { name: 'Blue', type: 'bot', active: false };
+            }
+
+            closeAllModals();
+            enterGameScreen();
+
+            // Set avatars on player cards
+            const redAv = document.getElementById('avatar-red');
+            if (redAv) redAv.src = players['red'].avatar || userProfile.avatar;
+            const greenAv = document.getElementById('avatar-green');
+            if (greenAv) greenAv.src = players['green'].avatar || remotePlayerInfo.avatar;
+
+            showToast(`🎮 1v1 Real Live Match Started! ${myLiveColor === 'red' ? 'Your turn (Red)!' : "Opponent's turn (Red)!"}`);
+        }
+
+        function handleRemoteDiceRollStart(color) {
+            if (gameState === 'ROLLING') return;
+            gameState = 'ROLLING';
+            updatePlayerCardsUI();
+            const diceEl = document.getElementById(`dice-${color}`);
+            if (diceEl) diceEl.classList.add('rolling');
+            sfxDiceRoll();
+        }
+
+        function handleRemoteTokenMove(color, tokenIndex) {
+            clearTokenHighlights();
+            const token = tokens[color] ? tokens[color][tokenIndex] : null;
+            if (token) {
+                executeTokenMove(token);
+            }
+        }
+
+        function shareRoomOnWhatsApp() {
+            playClickSound();
+            const url = `${window.location.origin}${window.location.pathname}?room=${currentLiveRoomCode}`;
+            const text = `🎮 Mere saath Ludo Royal live khelo! Link par click karke room join karein: ${url} (Room Code: ${currentLiveRoomCode})`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function copyLiveRoomLink() {
+            playTone(850, 'triangle', 0.1);
+            const url = `${window.location.origin}${window.location.pathname}?room=${currentLiveRoomCode}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('✅ Match Link copied! Send on WhatsApp or open in 2nd tab to play!');
+                }).catch(() => {
+                    prompt('Copy this match link:', url);
+                });
+            } else {
+                prompt('Copy this match link:', url);
+            }
+        }
+
+        function copyRoomCode() {
+            playTone(800, 'triangle', 0.1);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText('849203');
+            }
+            showToast('Room Code 849203 Copied to Clipboard!');
+        }
+
+        function startQuickOnlineMatch() {
+            playClickSound();
+            showToast('Searching for open multiplayer rooms on network...');
+            const statusEl = document.getElementById('livePeerConnectionStatus');
+            if (statusEl) statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span> Searching...';
+            setTimeout(() => {
+                joinLivePeerRoom('999999');
+            }, 600);
+        }
+
+        function openPlayWithFriendsModal() {
+            playClickSound();
+            openModal('friendsRoomModal');
+        }
+
+
+        // Store
+        function openStoreModal(category = 'all') {
+            openModal('storeModal');
+        }
+
+        function purchaseItem(coins, gems, costStr) {
+            userCoins += coins;
+            userGems += gems;
+            updateResourceDisplays();
+            playCoinSound();
+            showToast(`Purchased successfully! ${coins > 0 ? '+' + coins.toLocaleString() + ' Coins ' : ''}${gems > 0 ? '+' + gems + ' Gems' : ''}`);
+        }
+
+        // =============================================================
+        // USER PROFILE & COUNTRY MANAGEMENT
+        // =============================================================
+        const COUNTRY_FLAGS = {
+            'India': '🇮🇳',
+            'United States': '🇺🇸',
+            'United Kingdom': '🇬🇧',
+            'United Arab Emirates': '🇦🇪',
+            'Saudi Arabia': '🇸🇦',
+            'Bangladesh': '🇧🇩',
+            'Pakistan': '🇵🇰',
+            'Nepal': '🇳🇵',
+            'Canada': '🇨🇦',
+            'Australia': '🇦🇺',
+            'Germany': '🇩🇪',
+            'France': '🇫🇷',
+            'Brazil': '🇧🇷',
+            'Indonesia': '🇮🇩',
+            'Global': '🌍'
+        };
+
+        let userProfile = {
+            name: 'Rupesh',
+            country: 'India',
+            flag: '🇮🇳',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+            email: 'rupeshkumar@gmail.com'
+        };
+
+        function loadUserProfile() {
+            try {
+                const saved = localStorage.getItem('ludo_user_profile');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.name && parsed.name.trim()) userProfile.name = parsed.name.trim();
+                    if (parsed.country) userProfile.country = parsed.country;
+                    if (parsed.flag) userProfile.flag = parsed.flag;
+                    if (parsed.email) userProfile.email = parsed.email;
+                    if (parsed.avatar) userProfile.avatar = parsed.avatar;
+                    userProfile.flag = COUNTRY_FLAGS[userProfile.country] || userProfile.flag || '🇮🇳';
+                }
+                const customAvatar = localStorage.getItem('ludo_custom_avatar');
+                if (customAvatar) {
+                    userProfile.avatar = customAvatar;
+                }
+            } catch(e) {}
+            updateUserProfileDisplays();
+        }
+
+        function saveUserProfile() {
+            try {
+                localStorage.setItem('ludo_user_profile', JSON.stringify(userProfile));
+                if (userProfile.avatar) {
+                    localStorage.setItem('ludo_custom_avatar', userProfile.avatar);
+                }
+            } catch(e) {}
+        }
+
+        function updateUserProfileDisplays() {
+            // Home screen top bar
+            const topName = document.getElementById('topBarUserName');
+            if (topName) topName.textContent = userProfile.name;
+            const topFlag = document.getElementById('topBarUserFlag');
+            if (topFlag) topFlag.textContent = userProfile.flag;
+            const topAvatar = document.getElementById('homeScreenAvatar');
+            if (topAvatar && userProfile.avatar) topAvatar.src = userProfile.avatar;
+
+            // Profile Modal Displays
+            const profName = document.getElementById('profileDisplayName');
+            if (profName) profName.textContent = userProfile.name;
+            const profFlag = document.getElementById('profileDisplayFlag');
+            if (profFlag) profFlag.textContent = userProfile.flag;
+            const profCountry = document.getElementById('profileDisplayCountryName');
+            if (profCountry) profCountry.textContent = userProfile.country;
+            const profAvatar = document.getElementById('profileModalAvatar');
+            if (profAvatar && userProfile.avatar) profAvatar.src = userProfile.avatar;
+
+            // Inputs
+            const profInput = document.getElementById('profileNameInput');
+            if (profInput) profInput.value = userProfile.name;
+            const profEmail = document.getElementById('profileGmailInput');
+            if (profEmail) profEmail.value = userProfile.email || 'rupeshkumar@gmail.com';
+            const profSelect = document.getElementById('profileCountrySelect');
+            if (profSelect) profSelect.value = userProfile.country;
+            const flagPreview = document.getElementById('profileFlagEmojiPreview');
+            if (flagPreview) flagPreview.textContent = userProfile.flag;
+
+            // Online Modal Displays
+            const onlineName = document.getElementById('onlineUserDisplayName');
+            if (onlineName) onlineName.textContent = userProfile.name;
+            const onlineFlag = document.getElementById('onlineUserDisplayFlag');
+            if (onlineFlag) onlineFlag.textContent = userProfile.flag;
+            const onlineEmail = document.getElementById('onlineUserDisplayEmail');
+            if (onlineEmail) onlineEmail.textContent = userProfile.email || 'rupeshkumar@gmail.com';
+            const onlineAvatar = document.getElementById('onlineUserDisplayAvatar');
+            if (onlineAvatar && userProfile.avatar) onlineAvatar.src = userProfile.avatar;
+
+            // In-game Red player card if human
+            if (players && players['red'] && players['red'].type === 'human') {
+                players['red'].name = userProfile.name;
+                const redNameEl = document.getElementById('name-red');
+                if (redNameEl) redNameEl.textContent = userProfile.name;
+                const redAvatarEl = document.getElementById('avatar-red');
+                if (redAvatarEl && userProfile.avatar) redAvatarEl.src = userProfile.avatar;
+            }
+        }
+
+        function triggerRealAvatarUpload() {
+            playClickSound();
+            const input = document.getElementById('realAvatarUploadInput');
+            if (input) input.click();
+        }
+
+        function handleRealAvatarUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showToast('Please select a valid image file!');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 200;
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > h) {
+                        if (w > maxDim) {
+                            h = Math.round((h * maxDim) / w);
+                            w = maxDim;
+                        }
+                    } else {
+                        if (h > maxDim) {
+                            w = Math.round((w * maxDim) / h);
+                            h = maxDim;
+                        }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+                    userProfile.avatar = optimizedBase64;
+                    saveUserProfile();
+                    updateUserProfileDisplays();
+                    playCoinSound();
+                    showToast('✅ Profile photo updated from device!');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function toggleProfileEditMode(showEdit) {
+            playClickSound();
+            const viewSec = document.getElementById('profileViewSection');
+            const editSec = document.getElementById('profileEditSection');
+            if (showEdit) {
+                if (viewSec) viewSec.classList.add('hidden');
+                if (editSec) editSec.classList.remove('hidden');
+                const profInput = document.getElementById('profileNameInput');
+                if (profInput) {
+                    profInput.value = userProfile.name;
+                    profInput.focus();
+                }
+                const profEmail = document.getElementById('profileGmailInput');
+                if (profEmail) profEmail.value = userProfile.email || 'rupeshkumar@gmail.com';
+                const profSelect = document.getElementById('profileCountrySelect');
+                if (profSelect) profSelect.value = userProfile.country;
+                const flagPreview = document.getElementById('profileFlagEmojiPreview');
+                if (flagPreview) flagPreview.textContent = userProfile.flag || '🇮🇳';
+            } else {
+                if (editSec) editSec.classList.add('hidden');
+                if (viewSec) viewSec.classList.remove('hidden');
+            }
+        }
+
+        function openProfileModal() {
+            playClickSound();
+            toggleProfileEditMode(false);
+            updateUserProfileDisplays();
+            openModal('profileModal');
+        }
+
+        function onProfileCountryChange(val) {
+            const flag = COUNTRY_FLAGS[val] || '🌍';
+            const flagPreview = document.getElementById('profileFlagEmojiPreview');
+            if (flagPreview) flagPreview.textContent = flag;
+        }
+
+        function saveUserProfileFromModal() {
+            const nameInput = document.getElementById('profileNameInput');
+            const emailInput = document.getElementById('profileGmailInput');
+            const countrySelect = document.getElementById('profileCountrySelect');
+
+            let newName = nameInput ? nameInput.value.trim() : '';
+            if (!newName) {
+                showToast('Please enter a valid player name!');
+                return;
+            }
+            if (newName.length > 15) {
+                newName = newName.substring(0, 15);
+            }
+
+            let newEmail = emailInput ? emailInput.value.trim() : '';
+            if (newEmail && !newEmail.includes('@')) {
+                newEmail += '@gmail.com';
+            }
+
+            const newCountry = countrySelect ? countrySelect.value : 'India';
+            userProfile.name = newName;
+            userProfile.country = newCountry;
+            userProfile.flag = COUNTRY_FLAGS[newCountry] || '🇮🇳';
+            if (newEmail) {
+                userProfile.email = newEmail;
+                userAuth.isLoggedIn = true;
+                userAuth.email = newEmail;
+                userAuth.accountName = newName;
+                userAuth.provider = 'google';
+                saveUserAuth();
+                updateAuthDisplays();
+            }
+
+            saveUserProfile();
+            updateUserProfileDisplays();
+            toggleProfileEditMode(false);
+            playCoinSound();
+            showToast(`Profile & Original Account updated: ${userProfile.name} ${userProfile.flag}`);
+        }
+
+        function openSettingsModal() {
+            openModal('settingsModal');
+        }
+
+        function openRulesModal() {
+            openModal('rulesModal');
+        }
+
+        function openMailModal() {
+            showToast('Mail: Welcome to Ludo King Royal! +250 Welcome Coins added!');
+            userCoins += 250;
+            updateResourceDisplays();
+        }
+
+        function openEventsModal() {
+            showToast('Daily Events: Complete 3 Online Matches for +2,000 Coins!');
+        }
+
+        function openFriendsModal() {
+            showToast('Friends: 12 Friends Online right now!');
+        }
+
+        function openInventoryModal() {
+            showToast('Inventory: Equipped Royal Golden 3D Dice!');
+        }
+
+        /* -------------------------------------------------------------
+         * 5. EXACT SNAKES & LADDERS ENGINE (MATCHING USER SCREENSHOT)
+         * ------------------------------------------------------------- */
+        let exactSnakeTurn = 'you'; // 'you' or 'com'
+        let exactSnakePos = { you: 1, com: 1 };
+        let exactSnakeRolling = false;
+        let exactSnakeBotTimer = null;
+
+        const EXACT_LADDERS = {
+            4: 14, 9: 31, 21: 42, 28: 84, 36: 44, 51: 67, 71: 91, 78: 98
+        };
+        const EXACT_SNAKES = {
+            17: 7, 54: 34, 62: 19, 64: 60, 81: 63, 87: 24, 93: 73, 95: 75, 99: 78
+        };
+
+        function openSnakeModal() {
+            startExactSnakeGame();
+        }
+
+        function startExactSnakeGame() {
+            playClickSound();
+            clearTimeout(exactSnakeBotTimer);
+            exactSnakePos = { you: 1, com: 1 };
+            exactSnakeTurn = 'you';
+            exactSnakeRolling = false;
+
+            // Switch to Screen 3
+            document.getElementById('homeScreen').classList.add('hidden');
+            const snakeScreen = document.getElementById('snakeScreen');
+            if (snakeScreen) {
+                snakeScreen.classList.remove('hidden');
+                snakeScreen.classList.add('flex');
+            }
+
+            buildExactSnakeGridDOM();
+            renderExactSnakeSvgOverlay();
+            renderExactDiceFace(2); // Initial roll of 2 like screenshot
+            updateExactTokensPosition();
+            updateExactTurnUI();
+        }
+
+        function returnFromSnakeGame() {
+            playClickSound();
+            clearTimeout(exactSnakeBotTimer);
+            const snakeScreen = document.getElementById('snakeScreen');
+            if (snakeScreen) {
+                snakeScreen.classList.add('hidden');
+                snakeScreen.classList.remove('flex');
+            }
+            document.getElementById('homeScreen').classList.remove('hidden');
+        }
+
+        function buildExactSnakeGridDOM() {
+            const grid = document.getElementById('exactSnakeGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            for (let r = 9; r >= 0; r--) {
+                const isOddRow = (r % 2 === 1);
+                for (let c = 0; c < 10; c++) {
+                    const num = isOddRow ? (r * 10 + (10 - c)) : (r * 10 + (c + 1));
+                    const cell = document.createElement('div');
+                    cell.id = `exact-cell-${num}`;
+                    cell.className = 'relative flex flex-col justify-between p-0.5 select-none overflow-hidden';
+                    
+                    const isPink = ((r + c) % 2 === 0);
+                    cell.style.backgroundColor = isPink ? '#fce7e7' : '#ffffff';
+
+                    const numSpan = document.createElement('span');
+                    numSpan.className = 'text-[9.5px] font-black text-slate-900 leading-none self-start';
+                    numSpan.style.fontFamily = "'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif";
+                    numSpan.textContent = num;
+                    cell.appendChild(numSpan);
+
+                    if (num === 100) {
+                        const flagSpan = document.createElement('span');
+                        flagSpan.className = 'text-xs absolute top-0.5 right-0.5 filter drop-shadow';
+                        flagSpan.textContent = '🚩';
+                        cell.appendChild(flagSpan);
+                    } else {
+                        const arrow = document.createElement('span');
+                        arrow.className = 'text-[11px] font-black text-rose-300/40 absolute inset-0 flex items-center justify-center pointer-events-none select-none';
+                        arrow.textContent = isOddRow ? '‹' : '›';
+                        cell.appendChild(arrow);
+                    }
+
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function renderExactSnakeSvgOverlay() {
+            const wrapper = document.getElementById('exactSnakeSvgWrapper');
+            if (!wrapper) return;
+
+            const ladders = [
+                [4, 14], [9, 31], [21, 42], [28, 84], [36, 44], [51, 67], [71, 91], [78, 98]
+            ];
+            const snakes = [
+                [17, 7], [54, 34], [62, 19], [64, 60], [81, 63], [87, 24], [93, 73], [95, 75], [99, 78]
+            ];
+
+            function getCoords(num) {
+                const rfb = Math.floor((num - 1) / 10);
+                const idx = (num - 1) % 10;
+                const col = (rfb % 2 === 0) ? idx : 9 - idx;
+                const rft = 9 - rfb;
+                return [col * 100 + 50, rft * 100 + 50];
+            }
+
+            let laddersSvg = '';
+            ladders.forEach(([b, t]) => {
+                const [x1, y1] = getCoords(b);
+                const [x2, y2] = getCoords(t);
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const len = Math.hypot(dx, dy);
+                const angle = Math.atan2(dy, dx);
+                const perpX = -Math.sin(angle) * 12.5;
+                const perpY = Math.cos(angle) * 12.5;
+
+                const r1x1 = x1 + perpX, r1y1 = y1 + perpY;
+                const r1x2 = x2 + perpX, r1y2 = y2 + perpY;
+                const r2x1 = x1 - perpX, r2y1 = y1 - perpY;
+                const r2x2 = x2 - perpX, r2y2 = y2 - perpY;
+
+                let rungs = '';
+                const numRungs = Math.max(2, Math.floor(len / 24));
+                for (let i = 1; i < numRungs; i++) {
+                    const frac = i / numRungs;
+                    const rx = x1 + dx * frac;
+                    const ry = y1 + dy * frac;
+                    rungs += `<line x1="${(rx + perpX).toFixed(1)}" y1="${(ry + perpY).toFixed(1)}" x2="${(rx - perpX).toFixed(1)}" y2="${(ry - perpY).toFixed(1)}" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>`;
+                }
+
+                laddersSvg += `
+                <g filter="drop-shadow(2px 4px 4px rgba(0,0,0,0.35))">
+                    <line x1="${r1x1.toFixed(1)}" y1="${(r1y1+3).toFixed(1)}" x2="${r1x2.toFixed(1)}" y2="${(r1y2+3).toFixed(1)}" stroke="rgba(0,0,0,0.25)" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="${r2x1.toFixed(1)}" y1="${(r2y1+3).toFixed(1)}" x2="${r2x2.toFixed(1)}" y2="${(r2y2+3).toFixed(1)}" stroke="rgba(0,0,0,0.25)" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="${r1x1.toFixed(1)}" y1="${r1y1.toFixed(1)}" x2="${r1x2.toFixed(1)}" y2="${r1y2.toFixed(1)}" stroke="#5ac8e8" stroke-width="5.5" stroke-linecap="round"/>
+                    <line x1="${r2x1.toFixed(1)}" y1="${r2y1.toFixed(1)}" x2="${r2x2.toFixed(1)}" y2="${r2y2.toFixed(1)}" stroke="#5ac8e8" stroke-width="5.5" stroke-linecap="round"/>
+                    <line x1="${r1x1.toFixed(1)}" y1="${r1y1.toFixed(1)}" x2="${r1x2.toFixed(1)}" y2="${r1y2.toFixed(1)}" stroke="#dbeafe" stroke-width="1.8" stroke-linecap="round"/>
+                    <line x1="${r2x1.toFixed(1)}" y1="${r2y1.toFixed(1)}" x2="${r2x2.toFixed(1)}" y2="${r2y2.toFixed(1)}" stroke="#dbeafe" stroke-width="1.8" stroke-linecap="round"/>
+                    ${rungs}
+                </g>`;
+            });
+
+            let snakesSvg = '';
+            snakes.forEach(([h, tl], idx) => {
+                const [x1, y1] = getCoords(h);
+                const [x2, y2] = getCoords(tl);
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const curveDir = (idx % 2 === 0) ? 1 : -1;
+                const perpX = -dy * 0.25 * curveDir;
+                const perpY = dx * 0.25 * curveDir;
+
+                const cp1x = x1 + dx * 0.33 + perpX;
+                const cp1y = y1 + dy * 0.33 + perpY;
+                const cp2x = x1 + dx * 0.66 - perpX;
+                const cp2y = y1 + dy * 0.66 - perpY;
+
+                const pathD = `M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+
+                const angle = Math.atan2(cp1y - y1, cp1x - x1);
+                const eye1x = x1 + Math.cos(angle + 0.6) * 7;
+                const eye1y = y1 + Math.sin(angle + 0.6) * 7;
+                const eye2x = x1 + Math.cos(angle - 0.6) * 7;
+                const eye2y = y1 + Math.sin(angle - 0.6) * 7;
+                const tongueX = x1 - Math.cos(angle) * 11;
+                const tongueY = y1 - Math.sin(angle) * 11;
+
+                snakesSvg += `
+                <g filter="drop-shadow(2px 4px 4px rgba(0,0,0,0.35))">
+                    <path d="${pathD}" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="14" stroke-linecap="round"/>
+                    <path d="${pathD}" fill="none" stroke="#166534" stroke-width="12" stroke-linecap="round"/>
+                    <path d="${pathD}" fill="none" stroke="#22c55e" stroke-width="8.5" stroke-linecap="round"/>
+                    <path d="${pathD}" fill="none" stroke="#facc15" stroke-width="3" stroke-dasharray="4, 10" stroke-linecap="round"/>
+                    <path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} L ${tongueX.toFixed(1)} ${tongueY.toFixed(1)}" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round"/>
+                    <circle cx="${x1.toFixed(1)}" cy="${y1.toFixed(1)}" r="9" fill="#22c55e" stroke="#166534" stroke-width="1.8"/>
+                    <circle cx="${eye1x.toFixed(1)}" cy="${eye1y.toFixed(1)}" r="2.5" fill="#ffffff"/>
+                    <circle cx="${eye1x.toFixed(1)}" cy="${eye1y.toFixed(1)}" r="1.2" fill="#0f172a"/>
+                    <circle cx="${eye2x.toFixed(1)}" cy="${eye2y.toFixed(1)}" r="2.5" fill="#ffffff"/>
+                    <circle cx="${eye2x.toFixed(1)}" cy="${eye2y.toFixed(1)}" r="1.2" fill="#0f172a"/>
+                </g>`;
+            });
+
+            wrapper.innerHTML = `<svg viewBox="0 0 1000 1000" class="absolute inset-0 w-full h-full pointer-events-none z-10">${laddersSvg}${snakesSvg}</svg>`;
+        }
+
+        function getExactCellPercent(num) {
+            const rfb = Math.floor((num - 1) / 10);
+            const idx = (num - 1) % 10;
+            const col = (rfb % 2 === 0) ? idx : 9 - idx;
+            const rft = 9 - rfb;
+            const leftPct = (col + 0.5) * 10;
+            const topPct = (rft + 0.5) * 10;
+            return [leftPct, topPct];
+        }
+
+        function updateExactTokensPosition() {
+            const [youX, youY] = getExactCellPercent(exactSnakePos.you);
+            const [comX, comY] = getExactCellPercent(exactSnakePos.com);
+
+            const tokenYou = document.getElementById('tokenYou');
+            const tokenCom = document.getElementById('tokenCom');
+
+            if (tokenYou) {
+                const offsetX = (exactSnakePos.you === exactSnakePos.com) ? -1.8 : 0;
+                tokenYou.style.left = `${youX + offsetX}%`;
+                tokenYou.style.top = `${youY}%`;
+            }
+            if (tokenCom) {
+                const offsetX = (exactSnakePos.you === exactSnakePos.com) ? 1.8 : 0;
+                tokenCom.style.left = `${comX + offsetX}%`;
+                tokenCom.style.top = `${comY}%`;
+            }
+
+            const badgeYou = document.getElementById('youSquareBadge');
+            if (badgeYou) badgeYou.textContent = `Sq: ${exactSnakePos.you}`;
+            const badgeCom = document.getElementById('comSquareBadge');
+            if (badgeCom) badgeCom.textContent = `Sq: ${exactSnakePos.com}`;
+        }
+
+        function updateExactTurnUI() {
+            const youSide = document.getElementById('controlYouSide');
+            const comSide = document.getElementById('controlComSide');
+            const diceContainer = document.getElementById('centerDiceContainer');
+
+            if (exactSnakeTurn === 'you') {
+                if (youSide) { youSide.classList.remove('opacity-60'); youSide.classList.add('scale-105'); }
+                if (comSide) { comSide.classList.add('opacity-60'); comSide.classList.remove('scale-105'); }
+                if (diceContainer) {
+                    diceContainer.classList.remove('opacity-60', 'pointer-events-none');
+                    diceContainer.classList.add('ring-2', 'ring-yellow-300');
+                }
+            } else {
+                if (comSide) { comSide.classList.remove('opacity-60'); comSide.classList.add('scale-105'); }
+                if (youSide) { youSide.classList.add('opacity-60'); youSide.classList.remove('scale-105'); }
+                if (diceContainer) {
+                    diceContainer.classList.remove('ring-2', 'ring-yellow-300');
+                    diceContainer.classList.add('opacity-80', 'pointer-events-none');
+                }
+            }
+        }
+
+        function renderExactDiceFace(val) {
+            const grid = document.getElementById('exactDicePips');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const pipMap = {
+                1: [4],
+                2: [2, 6],
+                3: [2, 4, 6],
+                4: [0, 2, 6, 8],
+                5: [0, 2, 4, 6, 8],
+                6: [0, 2, 3, 5, 6, 8]
+            };
+            const active = pipMap[val] || [4];
+
+            for (let i = 0; i < 9; i++) {
+                const pip = document.createElement('div');
+                pip.className = 'w-full h-full flex items-center justify-center';
+                if (active.includes(i)) {
+                    const dot = document.createElement('div');
+                    dot.className = 'w-2 h-2 rounded-full bg-slate-900 shadow-sm';
+                    pip.appendChild(dot);
+                }
+                grid.appendChild(pip);
+            }
+        }
+
+        function triggerYouDiceClick() {
+            if (exactSnakeRolling) return;
+            if (exactSnakeTurn !== 'you') return;
+            executeExactDiceRoll('you');
+        }
+
+        function executeExactDiceRoll(player) {
+            exactSnakeRolling = true;
+            sfxDiceRoll();
+
+            const diceCube = document.getElementById('exactSnakeDiceCube');
+            if (diceCube) diceCube.classList.add('animate-bounce');
+
+            let count = 0;
+            const interval = setInterval(() => {
+                const randVal = Math.floor(Math.random() * 6) + 1;
+                renderExactDiceFace(randVal);
+                count++;
+                if (count >= 7) {
+                    clearInterval(interval);
+                    if (diceCube) diceCube.classList.remove('animate-bounce');
+                    const finalRoll = Math.floor(Math.random() * 6) + 1;
+                    renderExactDiceFace(finalRoll);
+                    handleExactMove(player, finalRoll);
+                }
+            }, 60);
+        }
+
+        function handleExactMove(player, roll) {
+            const startPos = exactSnakePos[player];
+            const targetPos = startPos + roll;
+
+            if (targetPos > 100) {
+                showToast(`${player === 'you' ? 'You need' : 'Com needs'} exact ${100 - startPos} to win!`);
+                finishExactTurn(roll === 6);
+                return;
+            }
+
+            let curr = startPos;
+            const stepTimer = setInterval(() => {
+                curr++;
+                exactSnakePos[player] = curr;
+                sfxStep();
+                updateExactTokensPosition();
+
+                if (curr >= targetPos) {
+                    clearInterval(stepTimer);
+
+                    if (EXACT_LADDERS[targetPos]) {
+                        const ladderTop = EXACT_LADDERS[targetPos];
+                        setTimeout(() => {
+                            playCoinSound();
+                            showToast(`🪜 Ladder! Climbed to ${ladderTop}!`);
+                            exactSnakePos[player] = ladderTop;
+                            updateExactTokensPosition();
+                            checkExactWin(player, roll);
+                        }, 300);
+                    } else if (EXACT_SNAKES[targetPos]) {
+                        const snakeTail = EXACT_SNAKES[targetPos];
+                        setTimeout(() => {
+                            playTone(180, 'sawtooth', 0.2, 0, 0.15);
+                            showToast(`🐍 Snake! Slid down to ${snakeTail}!`);
+                            exactSnakePos[player] = snakeTail;
+                            updateExactTokensPosition();
+                            checkExactWin(player, roll);
+                        }, 300);
+                    } else {
+                        checkExactWin(player, roll);
+                    }
+                }
+            }, 110);
+        }
+
+        function checkExactWin(player, roll) {
+            if (exactSnakePos[player] === 100) {
+                playTone(523.25, 'sine', 0.1, 0, 0.2);
+                playTone(659.25, 'sine', 0.15, 0.1, 0.2);
+                playTone(783.99, 'sine', 0.3, 0.25, 0.25);
+                showToast(`🏆 ${player === 'you' ? 'YOU WON' : 'COM WON'} SNAKES & LADDERS!`);
+                exactSnakeRolling = false;
+                return;
+            }
+            finishExactTurn(roll === 6);
+        }
+
+        function finishExactTurn(isBonus) {
+            exactSnakeRolling = false;
+            if (isBonus) {
+                showToast('🎲 Rolled 6! Bonus Turn!');
+                updateExactTurnUI();
+                if (exactSnakeTurn === 'com') {
+                    exactSnakeBotTimer = setTimeout(() => executeExactDiceRoll('com'), 750);
+                }
+                return;
+            }
+
+            exactSnakeTurn = (exactSnakeTurn === 'you') ? 'com' : 'you';
+            updateExactTurnUI();
+
+            if (exactSnakeTurn === 'com') {
+                exactSnakeBotTimer = setTimeout(() => executeExactDiceRoll('com'), 850);
+            }
+        }
+
+        /* -------------------------------------------------------------
+         * 6. INITIALIZATION ON WINDOW LOAD
+         * ------------------------------------------------------------- */
+        window.onload = () => {
+            loadUserProfile();
+            loadUserAuth();
+            updateResourceDisplays();
+            buildLudoBoardDOM();
+            initDiceBoxes();
+
+            // Check if user came from a shared match link (e.g. ?room=123456)
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const roomCode = urlParams.get('room');
+                if (roomCode && roomCode.trim().length === 6) {
+                    setTimeout(() => {
+                        if (!userAuth.isLoggedIn) {
+                            userAuth.isLoggedIn = true;
+                            userAuth.provider = 'google';
+                            userAuth.accountName = userProfile.name;
+                            userAuth.email = userProfile.email || 'rupeshkumar@gmail.com';
+                            saveUserAuth();
+                            updateAuthDisplays();
+                        }
+                        openOnlineLobbyModal();
+                        joinLivePeerRoom(roomCode.trim());
+                        showToast(`🎮 Connecting to Live Match Room ${roomCode.trim()}...`);
+                    }, 600);
+                }
+            } catch(e) {}
+        };
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('Service Worker registered!', reg))
+                    .catch((err) => console.log('Service Worker registration failed', err));
+            });
+        }
+    </script>
+</body>
+</html>
